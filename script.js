@@ -775,4 +775,3 @@ window.showCollaborationMode = () => {
         }
     });
 };
-
