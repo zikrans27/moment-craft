@@ -496,8 +496,8 @@
                 console.log('Gift data loaded:', giftData);
                 console.log('Total letters:', totalLetters);
 
-                // Create sparkles
-                createSparkles();
+                // Apply background and visual effect from the start
+                applyBackgroundAndEffect();
             } catch (error) {
                 showError('Error loading gift data: ' + error.message);
             }
@@ -621,15 +621,11 @@
             }
         }
 
-        function applyCustomizations() {
-            // Load customization selections from localStorage
+        function applyBackgroundAndEffect() {
+            // Apply background pattern from the start (stage 1)
             const selectedBackground = localStorage.getItem('selectedBackground');
-            const selectedFontColor = localStorage.getItem('selectedFontColor') || 'white';
 
-            const letterFull = document.querySelector('.letter-full');
-
-            if (letterFull && selectedBackground) {
-                // Only apply custom background if user explicitly selected one
+            if (selectedBackground) {
                 const backgroundMap = {
                     'bg1': 'Assets/bg1.png',
                     'bg2': 'Assets/bg2.png',
@@ -639,17 +635,96 @@
 
                 const bgImage = backgroundMap[selectedBackground];
                 if (bgImage) {
-                    // Use setProperty with !important to override CSS
-                    letterFull.style.setProperty('background-image', `url('${bgImage}')`, 'important');
-                    letterFull.style.setProperty('background-size', 'cover', 'important');
-                    letterFull.style.setProperty('background-position', 'center', 'important');
-                    letterFull.style.setProperty('background-repeat', 'no-repeat', 'important');
+                    // Apply to body background (behind the letter)
+                    document.body.style.setProperty('background-image', `url('${bgImage}')`, 'important');
+                    document.body.style.setProperty('background-size', 'cover', 'important');
+                    document.body.style.setProperty('background-position', 'center', 'important');
+                    document.body.style.setProperty('background-attachment', 'fixed', 'important');
 
-                    console.log('Applied background:', bgImage);
-                } else {
-                    console.log('No custom background selected, using default cat pattern');
+                    console.log('Applied background to body from start:', bgImage);
                 }
-                // If no match, keep default CSS background (paper1.png cat pattern)
+            }
+
+            // Apply visual effect from the start
+            const selectedEffect = localStorage.getItem('selectedEffect');
+            const container = document.querySelector('.container');
+
+            if (container && selectedEffect) {
+                // Create a sparkles container if it doesn't exist
+                let effectContainer = document.getElementById('global-effects');
+                if (!effectContainer) {
+                    effectContainer = document.createElement('div');
+                    effectContainer.id = 'global-effects';
+                    effectContainer.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        pointer-events: none;
+                        z-index: 1;
+                    `;
+                    document.body.appendChild(effectContainer);
+                }
+
+                if (selectedEffect === 'balloon') {
+                    createBalloons(effectContainer);
+                } else if (selectedEffect === 'sparkle') {
+                    createGlobalSparkles(effectContainer);
+                }
+            }
+        }
+
+        function createGlobalSparkles(container) {
+            const sparkleCount = 10;
+
+            for (let i = 0; i < sparkleCount; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.cssText = `
+                    position: absolute;
+                    width: 30px;
+                    height: 30px;
+                    background-image: url('Assets/sparkle.png');
+                    background-size: contain;
+                    animation: sparkle-float 3s infinite ease-in-out;
+                    opacity: 0.7;
+                    left: ${Math.random() * 100}%;
+                    top: ${Math.random() * 100}%;
+                    animation-delay: ${Math.random() * 3}s;
+                `;
+                container.appendChild(sparkle);
+            }
+        }
+
+        function applyCustomizations() {
+            // Load customization selections from localStorage
+            const selectedBackground = localStorage.getItem('selectedBackground');
+            const selectedFontColor = localStorage.getItem('selectedFontColor') || 'white';
+
+            const letterFull = document.querySelector('.letter-full');
+
+            if (selectedBackground) {
+                // Apply background to body (page background), not to letter paper
+                const backgroundMap = {
+                    'bg1': 'Assets/bg1.png',
+                    'bg2': 'Assets/bg2.png',
+                    'bg3': 'Assets/bg3.png',
+                    'bg4': 'Assets/bg4.png'
+                };
+
+                const bgImage = backgroundMap[selectedBackground];
+                if (bgImage) {
+                    // Apply to body background (behind the letter)
+                    document.body.style.setProperty('background-image', `url('${bgImage}')`, 'important');
+                    document.body.style.setProperty('background-size', 'cover', 'important');
+                    document.body.style.setProperty('background-position', 'center', 'important');
+                    document.body.style.setProperty('background-attachment', 'fixed', 'important');
+
+                    console.log('Applied background to body:', bgImage);
+                } else {
+                    console.log('No custom background selected, using default');
+                }
             }
 
             // Apply font color
@@ -668,6 +743,69 @@
             document.querySelectorAll('.recipient-name, .moment-badge, .gift-date, .greeting, .message, .signature').forEach(el => {
                 el.style.color = fontColor;
             });
+
+            // Apply visual effect (balloon or sparkle)
+            applyVisualEffect();
+        }
+
+        function applyVisualEffect() {
+            const selectedEffect = localStorage.getItem('selectedEffect');
+            const sparklesContainer = document.getElementById('sparkles');
+
+            if (!sparklesContainer) return;
+
+            // Clear existing effects
+            sparklesContainer.innerHTML = '';
+
+            if (selectedEffect === 'balloon') {
+                // Create balloon effects
+                createBalloons(sparklesContainer);
+            } else if (selectedEffect === 'sparkle') {
+                // Create sparkle effects (default)
+                createSparkles();
+            }
+        }
+
+        function createBalloons(container) {
+            const balloonCount = 6;
+            const balloonEmojis = ['🎈', '🎈', '🎈', '🎈', '🎈', '🎈'];
+
+            for (let i = 0; i < balloonCount; i++) {
+                const balloon = document.createElement('div');
+                balloon.className = 'balloon';
+                balloon.textContent = balloonEmojis[i];
+                balloon.style.cssText = `
+                    position: absolute;
+                    font-size: 40px;
+                    left: ${Math.random() * 100}%;
+                    bottom: -50px;
+                    animation: balloon-float ${5 + Math.random() * 3}s infinite ease-in-out;
+                    animation-delay: ${Math.random() * 2}s;
+                    opacity: 0.8;
+                `;
+                container.appendChild(balloon);
+            }
+
+            // Add balloon animation if not exists
+            if (!document.getElementById('balloon-animation-style')) {
+                const style = document.createElement('style');
+                style.id = 'balloon-animation-style';
+                style.textContent = `
+                    @keyframes balloon-float {
+                        0% {
+                            transform: translateY(0) rotate(0deg);
+                        }
+                        50% {
+                            transform: translateY(-400px) rotate(10deg);
+                        }
+                        100% {
+                            transform: translateY(-800px) rotate(-10deg);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
         }
 
         let musicLoaded = false;
@@ -765,6 +903,9 @@
             // Set sender signature
             document.getElementById('senderSignature').innerHTML =
                 `Dengan penuh kasih sayang,<br />❤ ${letterData.senderName || 'Seseorang yang peduli padamu'} ❤`;
+
+            // Apply customizations (background and font color)
+            applyCustomizations();
         }
 
         function showPhoto(letterIndex = 0) {
