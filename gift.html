@@ -30,7 +30,7 @@
             position: relative;
             width: 100%;
             max-width: 600px;
-            height: 400px;
+            height: 500px; /* Increased to fit taller envelope */
         }
 
         /* Stage 1: Closed Envelope */
@@ -117,26 +117,52 @@
             transform-origin: bottom center;
         }
 
-        /* Stage 3: Letter Peeking */
+        /* Stage 3: Letter Peeking (Redesigned) */
+        .stage3-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 800px; /* Increased to allow larger envelope */
+            height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin: 0 auto;
+            padding-bottom: 30px;
+        }
+
+        .envelope-visual-back {
+            position: absolute;
+            width: 700px; /* Increased from 450px */
+            z-index: 10;
+            bottom: 30px;
+            object-fit: contain;
+        }
+
         .letter-peek {
             position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 320px;
-            height: 220px;
-            background-image: url('Assets/paper1.png');
-            background-size: auto;
-            background-position: center;
-            background-repeat: no-repeat;
-            border-radius: 5px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 250px; /* Increased to match blue line reference */
+            height: 180px;
+            background-color: #f3f0e8;
+            z-index: 20;
+            bottom: 150px; /* Adjusted for larger size */
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
             cursor: pointer;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.05);
         }
 
         .letter-peek:hover {
-            transform: translateX(-50%) translateY(-10px);
+            transform: translateY(-40px);
+        }
+
+        .envelope-visual-front {
+            position: absolute;
+            width: 700px; /* Same as back */
+            z-index: 30;
+            pointer-events: none;
+            bottom: 30px;
+            object-fit: contain;
         }
 
         /* Stage 4: Full Letter */
@@ -282,7 +308,7 @@
         /* Click Instruction */
         .click-instruction {
             position: absolute;
-            bottom: -60px;
+            bottom: -10px; /* Moved up from -60px to avoid overlapping with buttons */
             left: 50%;
             transform: translateX(-50%);
             color: #2d1b4e;
@@ -413,9 +439,10 @@
 
         <!-- Stage 3: Letter Peeking -->
         <div class="stage" id="stage3">
-            <div class="envelope-opened">
-                <div class="envelope-flap-open"></div>
+            <div class="stage3-wrapper">
+                <img src="Assets/ign latte5.png" class="envelope-visual-back" alt="Envelope Back">
                 <div class="letter-peek" onclick="nextStage()"></div>
+                <img src="Assets/ign latte4.png" class="envelope-visual-front" alt="Envelope Front">
             </div>
             <div class="click-instruction">Klik surat untuk membuka</div>
         </div>
@@ -610,9 +637,11 @@
 
             // Update next button
             if (currentStage === 5 && currentLetterIndex < totalLetters - 1) {
+                nextBtn.disabled = false;
                 nextBtn.textContent = 'Surat Selanjutnya →';
                 nextBtn.onclick = nextLetter;
             } else if (currentStage < 5) {
+                nextBtn.disabled = false;
                 nextBtn.textContent = 'Next →';
                 nextBtn.onclick = nextStage;
             } else {
@@ -622,8 +651,10 @@
         }
 
         function applyBackgroundAndEffect() {
-            // Apply background pattern from the start (stage 1)
-            const selectedBackground = localStorage.getItem('selectedBackground');
+            if (!giftData) return;
+            
+            // Apply background pattern from the gift data
+            const selectedBackground = giftData.selectedBackground;
 
             if (selectedBackground) {
                 const backgroundMap = {
@@ -633,24 +664,31 @@
                     'bg4': 'Assets/bg4.png'
                 };
 
-                const bgImage = backgroundMap[selectedBackground];
+                let bgImage = backgroundMap[selectedBackground];
+                
+                // If not in map, check admin library
+                if (!bgImage) {
+                    const adminBgs = JSON.parse(localStorage.getItem('adminBackgroundLibrary') || '[]');
+                    const adminBg = adminBgs.find(bg => bg.id === selectedBackground);
+                    if (adminBg) {
+                        bgImage = adminBg.data;
+                    }
+                }
+
                 if (bgImage) {
-                    // Apply to body background (behind the letter)
+                    // Apply to body background
                     document.body.style.setProperty('background-image', `url('${bgImage}')`, 'important');
                     document.body.style.setProperty('background-size', 'cover', 'important');
                     document.body.style.setProperty('background-position', 'center', 'important');
                     document.body.style.setProperty('background-attachment', 'fixed', 'important');
-
-                    console.log('Applied background to body from start:', bgImage);
                 }
             }
 
-            // Apply visual effect from the start
-            const selectedEffect = localStorage.getItem('selectedEffect');
+            // Apply visual effect from the gift data
+            const selectedEffect = giftData.effect;
             const container = document.querySelector('.container');
 
             if (container && selectedEffect) {
-                // Create a sparkles container if it doesn't exist
                 let effectContainer = document.getElementById('global-effects');
                 if (!effectContainer) {
                     effectContainer = document.createElement('div');
@@ -669,8 +707,15 @@
 
                 if (selectedEffect === 'balloon') {
                     createBalloons(effectContainer);
-                } else if (selectedEffect === 'sparkle') {
+                } else if (selectedEffect === 'sparkle' || selectedEffect === 'sparkles') {
                     createGlobalSparkles(effectContainer);
+                } else {
+                    // Check if it's an admin effect
+                    const adminEffects = JSON.parse(localStorage.getItem('adminEffectLibrary') || '[]');
+                    const adminEffect = adminEffects.find(e => e.id === selectedEffect);
+                    if (adminEffect) {
+                        createAdminCustomEffect(effectContainer, adminEffect.data);
+                    }
                 }
             }
         }
@@ -698,14 +743,15 @@
         }
 
         function applyCustomizations() {
-            // Load customization selections from localStorage
-            const selectedBackground = localStorage.getItem('selectedBackground');
-            const selectedFontColor = localStorage.getItem('selectedFontColor') || 'white';
+            if (!giftData) return;
+            
+            // Load customization selections from gift data
+            const selectedFontColor = giftData.selectedFontColor || 'white';
 
             const letterFull = document.querySelector('.letter-full');
 
-            if (selectedBackground) {
-                // Apply background to body (page background), not to letter paper
+            if (giftData && giftData.selectedBackground) {
+                const selectedBackground = giftData.selectedBackground;
                 const backgroundMap = {
                     'bg1': 'Assets/bg1.png',
                     'bg2': 'Assets/bg2.png',
@@ -713,17 +759,22 @@
                     'bg4': 'Assets/bg4.png'
                 };
 
-                const bgImage = backgroundMap[selectedBackground];
+                let bgImage = backgroundMap[selectedBackground];
+                
+                // If not in map, check admin library
+                if (!bgImage) {
+                    const adminBgs = JSON.parse(localStorage.getItem('adminBackgroundLibrary') || '[]');
+                    const adminBg = adminBgs.find(bg => bg.id === selectedBackground);
+                    if (adminBg) {
+                        bgImage = adminBg.data;
+                    }
+                }
+
                 if (bgImage) {
-                    // Apply to body background (behind the letter)
                     document.body.style.setProperty('background-image', `url('${bgImage}')`, 'important');
                     document.body.style.setProperty('background-size', 'cover', 'important');
                     document.body.style.setProperty('background-position', 'center', 'important');
                     document.body.style.setProperty('background-attachment', 'fixed', 'important');
-
-                    console.log('Applied background to body:', bgImage);
-                } else {
-                    console.log('No custom background selected, using default');
                 }
             }
 
@@ -749,7 +800,7 @@
         }
 
         function applyVisualEffect() {
-            const selectedEffect = localStorage.getItem('selectedEffect');
+            const selectedEffect = giftData ? giftData.effect : null;
             const sparklesContainer = document.getElementById('sparkles');
 
             if (!sparklesContainer) return;
@@ -758,11 +809,38 @@
             sparklesContainer.innerHTML = '';
 
             if (selectedEffect === 'balloon') {
-                // Create balloon effects
                 createBalloons(sparklesContainer);
             } else if (selectedEffect === 'sparkle') {
-                // Create sparkle effects (default)
                 createSparkles();
+            } else if (selectedEffect) {
+                // Check if it's an admin effect
+                const adminEffects = JSON.parse(localStorage.getItem('adminEffectLibrary') || '[]');
+                const adminEffect = adminEffects.find(e => e.id === selectedEffect);
+                if (adminEffect) {
+                    createAdminCustomEffect(sparklesContainer, adminEffect.data);
+                }
+            }
+        }
+
+        function createAdminCustomEffect(container, imageData) {
+            const count = 10;
+            for (let i = 0; i < count; i++) {
+                const item = document.createElement('div');
+                item.style.cssText = `
+                    position: absolute;
+                    width: 40px;
+                    height: 40px;
+                    background-image: url('${imageData}');
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                    left: ${Math.random() * 100}%;
+                    top: ${Math.random() * 100}%;
+                    animation: sparkle-float ${3 + Math.random() * 2}s infinite ease-in-out;
+                    animation-delay: ${Math.random() * 2}s;
+                    opacity: 0.8;
+                    pointer-events: none;
+                `;
+                container.appendChild(item);
             }
         }
 
@@ -811,37 +889,37 @@
         let musicLoaded = false;
 
         function loadAndPlayMusic() {
-            const selectedMusic = localStorage.getItem('selectedMusic');
-
-            // Only proceed if user selected a song
-            if (!selectedMusic || musicLoaded) {
-                console.log('No music selected or already loaded');
-                return; // Exit early - don't show player
+            // Only proceed if user selected a song for this gift
+            if (!giftData || !giftData.selectedMusic || musicLoaded) {
+                console.log('No music for this gift or already loaded');
+                return;
             }
 
-            const musicData = JSON.parse(selectedMusic);
-            if (musicData && musicData.audioFile) {
-                const playerContainer = document.getElementById('musicPlayer');
-                const audioPlayer = document.getElementById('audio-player');
+            try {
+                const musicData = giftData.selectedMusic;
+                
+                // Check if we have music data
+                if (musicData && (musicData.src || musicData.data || musicData.audioFile)) {
+                    const playerContainer = document.getElementById('musicPlayer');
+                    const audioPlayer = document.getElementById('audio-player');
 
-                // Set audio source to local file
-                audioPlayer.src = musicData.audioFile;
+                    // Set audio source
+                    audioPlayer.src = musicData.src || musicData.data || musicData.audioFile;
 
-                // Autoplay the audio
-                audioPlayer.play().catch(error => {
-                    console.log('Autoplay prevented:', error);
-                    // If autoplay is blocked, user needs to click play
-                });
+                    // Autoplay the audio
+                    audioPlayer.play().catch(error => {
+                        console.log('Autoplay prevented:', error);
+                    });
 
-                // Show the music player only if song exists
-                playerContainer.classList.add('show');
-
-                musicLoaded = true;
-                console.log('Playing music:', musicData.title, 'from', musicData.audioFile);
-            } else {
-                console.log('Invalid music data');
+                    playerContainer.classList.add('show');
+                    musicLoaded = true;
+                    console.log('✅ Playing music:', musicData.name || musicData.title);
+                }
+            } catch (error) {
+                console.error('Error loading music:', error);
             }
         }
+
         function populateLetterContent(letterIndex = 0) {
             if (!giftData) return;
 
@@ -941,32 +1019,6 @@
                 sparkle.style.top = Math.random() * 100 + '%';
                 sparkle.style.animationDelay = Math.random() * 3 + 's';
                 sparklesContainer.appendChild(sparkle);
-            }
-        }
-
-        function loadAndPlayMusic() {
-            const selectedMusic = localStorage.getItem('selectedMusic');
-            if (selectedMusic && !musicLoaded) {
-                const musicData = JSON.parse(selectedMusic);
-                if (musicData && musicData.audioFile) {
-                    const playerContainer = document.getElementById('musicPlayer');
-                    const audioPlayer = document.getElementById('audio-player');
-
-                    // Set audio source to local file
-                    audioPlayer.src = musicData.audioFile;
-
-                    // Autoplay the audio
-                    audioPlayer.play().catch(error => {
-                        console.log('Autoplay prevented:', error);
-                        // If autoplay is blocked, user needs to click play
-                    });
-
-                    // Show the music player
-                    playerContainer.classList.add('show');
-
-                    musicLoaded = true;
-                    console.log('Playing music:', musicData.title, 'from', musicData.audioFile);
-                }
             }
         }
     </script>
