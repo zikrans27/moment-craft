@@ -1,3 +1,407 @@
+// --- LOGIN STATE MANAGEMENT ---
+let isUserLoggedIn = false;
+
+// Check if user is logged in
+function checkLoginStatus() {
+    const loginStatus = localStorage.getItem('userLoggedIn');
+    isUserLoggedIn = loginStatus === 'true';
+    return isUserLoggedIn;
+}
+
+// Set login status
+function setLoginStatus(status) {
+    isUserLoggedIn = status;
+    localStorage.setItem('userLoggedIn', status.toString());
+}
+
+// Show login popup for premium features
+function showLoginPopup(featureName, onLoginCallback) {
+    const overlay = document.createElement('div');
+    overlay.id = 'login-popup-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(5px);
+    `;
+
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        max-width: 450px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideIn 0.3s ease;
+    `;
+
+    // Add animation keyframes
+    if (!document.getElementById('popup-animation-style')) {
+        const style = document.createElement('style');
+        style.id = 'popup-animation-style';
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    modal.innerHTML = `
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h2 style="color: #2d1b4e; margin-bottom: 10px; font-size: 26px;">Login Diperlukan</h2>
+            <p style="color: #666; font-size: 14px; line-height: 1.6;">
+                Untuk menggunakan fitur <strong style="color: #ff7b2d;">${featureName}</strong>, silakan login terlebih dahulu.
+            </p>
+        </div>
+        
+        <form id="mini-login-form" style="margin-bottom: 20px;">
+            <div style="margin-bottom: 15px;">
+                <input 
+                    type="email" 
+                    id="mini-login-email" 
+                    placeholder="Email" 
+                    required 
+                    style="
+                        width: 100%;
+                        padding: 15px;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 10px;
+                        font-size: 15px;
+                        transition: border 0.3s ease;
+                        box-sizing: border-box;
+                    "
+                />
+            </div>
+            <div style="margin-bottom: 20px;">
+                <input 
+                    type="password" 
+                    id="mini-login-password" 
+                    placeholder="Password" 
+                    required 
+                    style="
+                        width: 100%;
+                        padding: 15px;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 10px;
+                        font-size: 15px;
+                        transition: border 0.3s ease;
+                        box-sizing: border-box;
+                    "
+                />
+            </div>
+            <button type="submit" style="
+                width: 100%;
+                background: #ff7b2d;
+                color: white;
+                border: none;
+                padding: 15px;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(255, 123, 45, 0.3);
+            ">
+                Login
+            </button>
+        </form>
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+            <p style="color: #999; font-size: 13px; margin-bottom: 10px;">Belum punya akun?</p>
+            <button id="show-register-btn" style="
+                background: transparent;
+                color: #ff7b2d;
+                border: 2px solid #ff7b2d;
+                padding: 12px 30px;
+                border-radius: 10px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            ">
+                Daftar Sekarang
+            </button>
+        </div>
+        
+        <button id="cancel-popup-btn" style="
+            width: 100%;
+            background: #f5f5f5;
+            color: #666;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        ">
+            Batal
+        </button>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Add hover effects
+    const inputs = modal.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('focus', () => {
+            input.style.borderColor = '#ff7b2d';
+        });
+        input.addEventListener('blur', () => {
+            input.style.borderColor = '#e0e0e0';
+        });
+    });
+
+    // Login form submission
+    document.getElementById('mini-login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        // Set user as logged in
+        setLoginStatus(true);
+        
+        // Close popup
+        document.body.removeChild(overlay);
+        
+        // Show success message
+        showMessageBox("Login Berhasil", "Selamat datang! Anda sekarang dapat menggunakan fitur " + featureName + ".");
+        
+        // Execute callback after message box is closed
+        setTimeout(() => {
+            if (onLoginCallback) {
+                onLoginCallback();
+            }
+        }, 1500);
+    });
+
+    // Show register form
+    document.getElementById('show-register-btn').addEventListener('click', () => {
+        showRegisterPopup(featureName, onLoginCallback);
+        document.body.removeChild(overlay);
+    });
+
+    // Cancel button handler
+    document.getElementById('cancel-popup-btn').addEventListener('click', () => {
+        document.body.removeChild(overlay);
+    });
+
+    // Click outside to close
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            document.body.removeChild(overlay);
+        }
+    });
+}
+
+// Show register popup for premium features
+function showRegisterPopup(featureName, onLoginCallback) {
+    const overlay = document.createElement('div');
+    overlay.id = 'register-popup-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(5px);
+    `;
+
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        max-width: 450px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideIn 0.3s ease;
+    `;
+
+    modal.innerHTML = `
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h2 style="color: #2d1b4e; margin-bottom: 10px; font-size: 26px;">Buat Akun Baru</h2>
+            <p style="color: #666; font-size: 14px; line-height: 1.6;">
+                Daftar untuk menggunakan fitur <strong style="color: #ff7b2d;">${featureName}</strong>
+            </p>
+        </div>
+        
+        <form id="mini-register-form" style="margin-bottom: 20px;">
+            <div style="margin-bottom: 15px;">
+                <input 
+                    type="text" 
+                    id="mini-register-name" 
+                    placeholder="Nama Lengkap" 
+                    required 
+                    style="
+                        width: 100%;
+                        padding: 15px;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 10px;
+                        font-size: 15px;
+                        transition: border 0.3s ease;
+                        box-sizing: border-box;
+                    "
+                />
+            </div>
+            <div style="margin-bottom: 15px;">
+                <input 
+                    type="email" 
+                    id="mini-register-email" 
+                    placeholder="Email" 
+                    required 
+                    style="
+                        width: 100%;
+                        padding: 15px;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 10px;
+                        font-size: 15px;
+                        transition: border 0.3s ease;
+                        box-sizing: border-box;
+                    "
+                />
+            </div>
+            <div style="margin-bottom: 20px;">
+                <input 
+                    type="password" 
+                    id="mini-register-password" 
+                    placeholder="Password" 
+                    required 
+                    style="
+                        width: 100%;
+                        padding: 15px;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 10px;
+                        font-size: 15px;
+                        transition: border 0.3s ease;
+                        box-sizing: border-box;
+                    "
+                />
+            </div>
+            <button type="submit" style="
+                width: 100%;
+                background: #ff7b2d;
+                color: white;
+                border: none;
+                padding: 15px;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(255, 123, 45, 0.3);
+            ">
+                Daftar
+            </button>
+        </form>
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+            <p style="color: #999; font-size: 13px; margin-bottom: 10px;">Sudah punya akun?</p>
+            <button id="show-login-btn" style="
+                background: transparent;
+                color: #ff7b2d;
+                border: 2px solid #ff7b2d;
+                padding: 12px 30px;
+                border-radius: 10px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            ">
+                Login
+            </button>
+        </div>
+        
+        <button id="cancel-register-btn" style="
+            width: 100%;
+            background: #f5f5f5;
+            color: #666;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        ">
+            Batal
+        </button>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Add hover effects
+    const inputs = modal.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('focus', () => {
+            input.style.borderColor = '#ff7b2d';
+        });
+        input.addEventListener('blur', () => {
+            input.style.borderColor = '#e0e0e0';
+        });
+    });
+
+    // Register form submission
+    document.getElementById('mini-register-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        // Set user as logged in
+        setLoginStatus(true);
+        
+        // Close popup
+        document.body.removeChild(overlay);
+        
+        // Show success message
+        showMessageBox("Registrasi Berhasil", "Akun berhasil dibuat! Anda sekarang dapat menggunakan fitur " + featureName + ".");
+        
+        // Execute callback after message box is closed
+        setTimeout(() => {
+            if (onLoginCallback) {
+                onLoginCallback();
+            }
+        }, 1500);
+    });
+
+    // Show login form
+    document.getElementById('show-login-btn').addEventListener('click', () => {
+        showLoginPopup(featureName, onLoginCallback);
+        document.body.removeChild(overlay);
+    });
+
+    // Cancel button handler
+    document.getElementById('cancel-register-btn').addEventListener('click', () => {
+        document.body.removeChild(overlay);
+    });
+
+    // Click outside to close
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            document.body.removeChild(overlay);
+        }
+    });
+}
+
 // --- MESSAGE BOX LOGIC ---
 window.showMessageBox = (title, text) => {
     document.getElementById('message-title').textContent = title;
@@ -17,6 +421,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // This ensures music player only shows if user actively selects music for THIS gift
     localStorage.removeItem('selectedMusic');
     console.log('✅ Music selection cleared - ready for new gift');
+    
+    // Check login status
+    checkLoginStatus();
 });
 
 // --- PAGE NAVIGATION LOGIC ---
@@ -79,6 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const input = event.target;
             const preview = document.getElementById('upload-preview');
             const status = document.getElementById('upload-status');
+            const icon = document.querySelector('.upload-icon');
 
             if (input.files && input.files[0]) {
                 try {
@@ -86,15 +494,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     const compressedImage = await compressImage(input.files[0]);
                     preview.src = compressedImage;
                     preview.style.display = 'block';
-                    status.textContent = input.files[0].name + ' (compressed)';
+                    
+                    // Hide icon and status as requested
+                    if (status) status.style.display = 'none';
+                    if (icon) icon.style.display = 'none';
+                    
+                    console.log('Image uploaded and UI updated');
                 } catch (error) {
                     console.error('Error compressing image:', error);
-                    status.textContent = 'Error loading image';
+                    if (status) {
+                        status.style.display = 'block';
+                        status.textContent = 'Error loading image';
+                    }
                 }
             } else {
                 preview.src = '#';
                 preview.style.display = 'none';
-                status.textContent = 'Click to upload image or video moment';
+                if (status) {
+                    status.style.display = 'block';
+                    status.textContent = 'Click to upload image or video moment';
+                }
+                if (icon) icon.style.display = 'block';
             }
         });
     }
@@ -132,14 +552,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Hide collaboration icon (people icon) in collaboration mode
+            // Hide collaboration, music, and effect icons in collaboration mode
             const sidebarIcons = document.querySelector('.sidebar-icons');
             if (sidebarIcons) {
                 const iconButtons = sidebarIcons.querySelectorAll('.icon-btn');
-                if (iconButtons.length >= 3) {
-                    // Hide the third button (people icon)
-                    iconButtons[2].style.display = 'none';
-                }
+                // Hide all sidebar icons (music, effect, collaboration)
+                iconButtons.forEach(btn => {
+                    btn.style.display = 'none';
+                });
             }
         } else {
             showPage('welcome');
@@ -195,13 +615,24 @@ let selectedFontColorId = 'white';
 function renderEffects() {
     const container = document.getElementById('effect-grid-container');
     container.innerHTML = '';
-    effects.forEach(effect => {
+    
+    // Combine default and admin effects
+    const adminEffects = typeof getAdminEffectLibrary === 'function' ? getAdminEffectLibrary() : [];
+    const allEffects = [...effects, ...adminEffects.map(e => ({ id: e.id, name: e.name, data: e.data }))];
+    
+    allEffects.forEach(effect => {
         const isActive = effect.id === selectedEffectId ? 'selected' : '';
         const item = document.createElement('div');
         item.className = `effect-item ${isActive}`;
         item.dataset.effectId = effect.id;
+        
+        // Show image if available (admin effect), otherwise show icon (default effect)
+        const display = effect.data 
+            ? `<img src="${effect.data}" alt="${effect.name}" style="width: 40px; height: 40px; object-fit: contain;" />`
+            : `<div class="effect-icon">${effect.icon}</div>`;
+            
         item.innerHTML = `
-            <div class="effect-icon">${effect.icon}</div>
+            ${display}
             <div class="effect-name">${effect.name}</div>
         `;
         item.addEventListener('click', () => {
@@ -216,7 +647,12 @@ function renderEffects() {
 function renderBackgrounds() {
     const container = document.getElementById('background-grid-container');
     container.innerHTML = '';
-    backgrounds.forEach(bg => {
+    
+    // Combine default and admin backgrounds
+    const adminBackgrounds = typeof getAdminBackgroundLibrary === 'function' ? getAdminBackgroundLibrary() : [];
+    const allBackgrounds = [...backgrounds, ...adminBackgrounds.map(bg => ({ id: bg.id, name: bg.name, image: bg.data }))];
+    
+    allBackgrounds.forEach(bg => {
         const isActive = bg.id === selectedBackgroundId ? 'selected' : '';
         const item = document.createElement('div');
         item.className = `background-item ${isActive}`;
@@ -256,6 +692,14 @@ function renderFontColors() {
 }
 
 window.showEffectSelection = () => {
+    // Check if user is logged in
+    if (!checkLoginStatus()) {
+        showLoginPopup('Effect', () => {
+            showEffectSelection();
+        });
+        return;
+    }
+    
     // Load saved selections from localStorage if they exist
     const savedEffect = localStorage.getItem('selectedEffect');
     const savedBackground = localStorage.getItem('selectedBackground');
@@ -283,9 +727,16 @@ window.closeEffectIfClickOutside = (event) => {
 };
 
 window.applyEffect = () => {
+    // Combine all to find the name
+    const adminEffects = typeof getAdminEffectLibrary === 'function' ? getAdminEffectLibrary() : [];
+    const allEffects = [...effects, ...adminEffects.map(e => ({ id: e.id, name: e.name }))];
+    
+    const adminBackgrounds = typeof getAdminBackgroundLibrary === 'function' ? getAdminBackgroundLibrary() : [];
+    const allBackgrounds = [...backgrounds, ...adminBackgrounds.map(bg => ({ id: bg.id, name: bg.name }))];
+    
     // Get selected names for display
-    const effectName = effects.find(e => e.id === selectedEffectId)?.name || 'None';
-    const backgroundName = backgrounds.find(b => b.id === selectedBackgroundId)?.name || 'Default';
+    const effectName = allEffects.find(e => e.id === selectedEffectId)?.name || 'None';
+    const backgroundName = allBackgrounds.find(b => b.id === selectedBackgroundId)?.name || 'Default';
     const fontColorName = fontColors.find(c => c.id === selectedFontColorId)?.name || 'White';
 
     // Save selections to localStorage
@@ -293,7 +744,7 @@ window.applyEffect = () => {
     localStorage.setItem('selectedBackground', selectedBackgroundId);
     localStorage.setItem('selectedFontColor', selectedFontColorId);
 
-    // Update display in form (if you want to show selection)
+    // Update display in form
     document.getElementById('effect-display').textContent = `${effectName}, ${backgroundName}, ${fontColorName}`;
 
     hideEffectSelection();
@@ -369,7 +820,10 @@ function handleGiftSubmission(event) {
             senderName,
             message,
             momentType,
-            effect,
+            effect: localStorage.getItem('selectedEffect') || 'balloon',
+            selectedBackground: localStorage.getItem('selectedBackground') || 'bg1',
+            selectedFontColor: localStorage.getItem('selectedFontColor') || 'white',
+            selectedMusic: JSON.parse(localStorage.getItem('selectedMusic') || 'null'),
             imageData,
             createdAt: new Date().toISOString(),
             collaborators: []
@@ -444,191 +898,75 @@ window.shareGift = async () => {
 
 function handleLoginSubmission(event) {
     event.preventDefault();
-    showMessageBox("Login Simulated", "Logging in... In a real app, this would verify credentials and redirect.");
-    setTimeout(() => showPage('moment-selection'), 1000);
+    
+    // Set user as logged in
+    setLoginStatus(true);
+    
+    showMessageBox("Login Berhasil", "Selamat datang! Anda sekarang dapat menggunakan semua fitur.");
+    
+    setTimeout(() => {
+        showPage('moment-selection');
+    }, 1000);
 }
 
 function handleRegisterSubmission(event) {
     event.preventDefault();
-    showMessageBox("Registration Simulated", "Account created! You are now logged in.");
-    setTimeout(() => showPage('moment-selection'), 1000);
-}
-
-// Di bagian form submit handler
-document.getElementById('gift-creation-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const recipientName = document.getElementById('recipient-name').value;
-    const senderName = document.getElementById('sender-name').value;
-    const message = document.getElementById('gift-message').value;
-    const uploadedImage = document.getElementById('upload-preview').src;
-
-    // Simpan data ke localStorage atau variabel
-    localStorage.setItem('giftData', JSON.stringify({
-        recipient: recipientName,
-        sender: senderName,
-        message: message,
-        image: uploadedImage,
-        moment: document.getElementById('selected-moment').value
-    }));
-
-    // Redirect ke halaman amplop
-    window.location.href = 'envelope.html';
-});
-
-// --- MUSIC SELECTION LOGIC (LOCAL FILES) ---
-let selectedSongData = null;
-
-// Local Music Files from Assets folder
-const localSongs = [
-    {
-        id: 1,
-        title: 'Happy Birthday Song 1',
-        artist: 'Classical',
-        audioFile: 'Assets/happy-birthday-334876.mp3',
-        thumbnail: '🎵'
-    },
-    {
-        id: 2,
-        title: 'Happy Birthday Song 2',
-        artist: 'Upbeat',
-        audioFile: 'Assets/happy-birthday-357371.mp3',
-        thumbnail: '🎵'
-    },
-    {
-        id: 3,
-        title: 'Happy Birthday Song 3',
-        artist: 'Modern',
-        audioFile: 'Assets/happy-birthday-401919.mp3',
-        thumbnail: '🎵'
-    }
-];
-
-window.showMusicSelection = () => {
-    const overlay = document.getElementById('youtube-music-overlay');
-
-    // Show overlay
-    overlay.classList.add('active');
-    renderSongList(localSongs); // Use local songs instead
-
-    // Hide search functionality since we're using local files
-    const searchContainer = document.querySelector('.youtube-search-container');
-    if (searchContainer) {
-        searchContainer.style.display = 'none';
-    }
-};
-
-window.hideMusicSelection = () => {
-    const overlay = document.getElementById('youtube-music-overlay');
-    overlay.classList.remove('active');
-    selectedSongData = null;
-
-    // Stop and hide preview player
-    const previewPlayer = document.getElementById('preview-audio-player');
-    if (previewPlayer) {
-        previewPlayer.pause();
-        previewPlayer.src = '';
-        previewPlayer.style.display = 'none';
-    }
-};
-
-// Keep old names for backward compatibility
-window.showYouTubeMusic = window.showMusicSelection;
-window.hideYouTubeMusic = window.hideMusicSelection;
-
-window.closeYouTubeIfClickOutside = (event) => {
-    if (event.target.id === 'youtube-music-overlay') {
-        hideMusicSelection();
-    }
-};
-
-function renderSongList(songs) {
-    const songListContainer = document.getElementById('youtube-song-list');
-    songListContainer.innerHTML = '';
-
-    if (songs.length === 0) {
-        songListContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">Tidak ada lagu ditemukan</div>';
+    
+    // Get form data
+    const name = event.target.querySelector('input[type="text"]').value;
+    const email = event.target.querySelector('input[type="email"]').value;
+    const password = event.target.querySelector('input[type="password"]').value;
+    
+    // Get existing users or create new array
+    let registeredUsers = localStorage.getItem('registeredUsers');
+    registeredUsers = registeredUsers ? JSON.parse(registeredUsers) : [];
+    
+    // Check if user already exists
+    const userExists = registeredUsers.some(user => user.email === email);
+    if (userExists) {
+        showMessageBox("Error", "Email sudah terdaftar. Silakan gunakan email lain atau login.");
         return;
     }
-
-    // Create preview audio player (hidden initially)
-    let previewPlayer = document.getElementById('preview-audio-player');
-    if (!previewPlayer) {
-        previewPlayer = document.createElement('audio');
-        previewPlayer.id = 'preview-audio-player';
-        previewPlayer.controls = true;
-        previewPlayer.style.cssText = 'width: 100%; margin: 15px 0; display: none;';
-        songListContainer.parentNode.insertBefore(previewPlayer, songListContainer);
-    }
-
-    songs.forEach(song => {
-        const songItem = document.createElement('div');
-        songItem.className = 'youtube-song-item';
-
-        // For local files, use emoji as thumbnail
-        const thumbnailHTML = song.audioFile
-            ? `<div class="song-thumbnail" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 32px; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">${song.thumbnail}</div>`
-            : `<img src="${song.thumbnail}" alt="${song.title}" class="song-thumbnail" onerror="this.src='https://via.placeholder.com/60'">`;
-
-        songItem.innerHTML = `
-            ${thumbnailHTML}
-            <div class="song-info">
-                <div class="song-title">${song.title}</div>
-                <div class="song-artist">${song.artist}</div>
-            </div>
-        `;
-
-        songItem.addEventListener('click', () => {
-            // Remove selection from all items
-            document.querySelectorAll('.youtube-song-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            // Add selection to clicked item
-            songItem.classList.add('selected');
-            selectedSongData = song;
-
-            // Play preview if it's a local audio file
-            if (song.audioFile) {
-                previewPlayer.src = song.audioFile;
-                previewPlayer.style.display = 'block';
-                previewPlayer.currentTime = 0; // Start from beginning
-                previewPlayer.play().catch(error => {
-                    console.log('Preview autoplay prevented:', error);
-                });
-            }
-        });
-
-        songListContainer.appendChild(songItem);
-    });
+    
+    // Add new user
+    const newUser = {
+        name: name,
+        email: email,
+        password: password, // In production, this should be hashed
+        registeredDate: new Date().toISOString()
+    };
+    
+    registeredUsers.push(newUser);
+    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+    
+    // Set user as logged in
+    setLoginStatus(true);
+    localStorage.setItem('currentUser', JSON.stringify(newUser));
+    
+    showMessageBox("Registrasi Berhasil", "Akun berhasil dibuat! Anda sekarang sudah login.");
+    
+    setTimeout(() => {
+        showPage('moment-selection');
+    }, 1000);
 }
 
-window.addSelectedSong = () => {
-    if (selectedSongData) {
-        showMessageBox('Lagu Ditambahkan', `"${selectedSongData.title}" telah ditambahkan ke kado Anda!`);
-        // Store selected song with audio file path for local playback
-        const musicData = {
-            title: selectedSongData.title,
-            artist: selectedSongData.artist,
-            audioFile: selectedSongData.audioFile, // Local file path instead of videoId
-            thumbnail: selectedSongData.thumbnail
-        };
-        localStorage.setItem('selectedMusic', JSON.stringify(musicData));
+// Redundant submit handler removed - now using handleGiftSubmission above
 
-        // Update music display in the form
-        const musicDisplay = document.getElementById('music-display');
-        if (musicDisplay) {
-            musicDisplay.textContent = `${selectedSongData.title} - ${selectedSongData.artist}`;
-        }
-
-        hideYouTubeMusic();
-    } else {
-        showMessageBox('Pilih Lagu', 'Silakan pilih lagu terlebih dahulu.');
-    }
-};
+// --- MUSIC SELECTION LOGIC REMOVED - NOW HANDLED BY music-upload.js ---
+// This section used to contain duplicate logic that conflicted with music-upload.js
+// All music selection is now centralized in music-upload.js for better admin integration.
 
 
 // --- COLLABORATION MODE LOGIC ---
 window.showCollaborationMode = () => {
+    // Check if user is logged in
+    if (!checkLoginStatus()) {
+        showLoginPopup('Kolaborasi', () => {
+            showCollaborationMode();
+        });
+        return;
+    }
+    
     // First, save current gift data to get gift ID
     const recipientNameField = document.getElementById('recipient-name');
     const recipientName = recipientNameField ? recipientNameField.value : '';
@@ -759,19 +1097,17 @@ window.showCollaborationMode = () => {
         }
     });
 
-    // Close button handler
+    // Close button handler - TIDAK redirect, hanya tutup modal
     document.getElementById('close-collab-modal-btn').addEventListener('click', () => {
         document.body.removeChild(overlay);
-        // Redirect to share page
-        window.location.href = `share.html?id=${giftId}`;
+        // Tidak redirect, tetap di halaman create-gift
     });
 
-    // Click outside to close
+    // Click outside to close - TIDAK redirect
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) {
             document.body.removeChild(overlay);
-            // Redirect to share page
-            window.location.href = `share.html?id=${giftId}`;
+            // Tidak redirect, tetap di halaman create-gift
         }
     });
 };
