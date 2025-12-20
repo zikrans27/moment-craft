@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login - MomentCraft</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="admin-style.css" />
+</head>
+
+<body>
+  <div class="admin-login-page">
+    <div class="circle circle-top-right"></div>
+    <div class="circle circle-bottom-left"></div>
+    
+    <div class="admin-login-container">
+      <div class="admin-login-card">
+        <div class="admin-logo">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        
+        <h1 class="admin-title">Admin Panel</h1>
+        <p class="admin-subtitle">MomentCraft Administration</p>
+        
+        <form id="admin-login-form" class="admin-form">
+          <div class="form-group">
+            <div class="input-icon">
+              <i class="fas fa-user"></i>
+              <input type="text" id="admin-username" placeholder="Username" required />
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="input-icon">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="admin-password" placeholder="Password" required />
+            </div>
+          </div>
+          
+          <button type="submit" class="btn-admin-login">
+            <i class="fas fa-sign-in-alt"></i> Login as Admin
+          </button>
+        </form>
+        
+        <div class="back-to-home">
+          <a href="index.html">
+            <i class="fas fa-arrow-left"></i> Back to Home
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="admin-script.js"></script>
+</body>
+
+</html>

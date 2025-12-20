@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - MomentCraft</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="admin-style.css" />
+</head>
+
+<body>
+  <div class="admin-dashboard">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-shield-alt"></i>
+        <h2>Admin Panel</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-section="overview">
+          <i class="fas fa-chart-line"></i>
+          <span>Overview</span>
+        </a>
+        <a href="#" class="nav-item" data-section="music">
+          <i class="fas fa-music"></i>
+          <span>Manage Music</span>
+        </a>
+        <a href="#" class="nav-item" data-section="effects">
+          <i class="fas fa-magic"></i>
+          <span>Manage Effects</span>
+        </a>
+        <a href="#" class="nav-item" data-section="users">
+          <i class="fas fa-users"></i>
+          <span>Manage Users</span>
+        </a>
+        <a href="#" class="nav-item" data-section="gifts">
+          <i class="fas fa-gift"></i>
+          <span>All Gifts</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" onclick="adminLogout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <h1 id="section-title">Dashboard Overview</h1>
+        <div class="admin-user">
+          <i class="fas fa-user-shield"></i>
+          <span id="admin-name">Administrator</span>
+        </div>
+      </header>
+
+      <!-- Overview Section -->
+      <section id="overview-section" class="content-section active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="total-users">0</h3>
+              <p>Total Users</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-gift"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="total-gifts">0</h3>
+              <p>Total Gifts</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-music"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="total-music">0</h3>
+              <p>Music Tracks</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-magic"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="total-effects">0</h3>
+              <p>Effects</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="recent-activity">
+          <h2>Recent Activity</h2>
+          <div class="activity-list" id="activity-list">
+            <!-- Activity items will be populated here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Music Management Section -->
+      <section id="music-section" class="content-section">
+        <div class="section-header">
+          <h2>Music Library</h2>
+          <button class="btn-add" onclick="showAddMusicModal()">
+            <i class="fas fa-plus"></i> Add Music
+          </button>
+        </div>
+
+        <div class="table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Artist</th>
+                <th>File Source</th>
+                <th>Added Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="music-table-body">
+              <!-- Music items will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Effects Management Section -->
+      <section id="effects-section" class="content-section">
+        <div class="section-header">
+          <h2>Effects Library</h2>
+          <button class="btn-add" onclick="showAddEffectModal()">
+            <i class="fas fa-plus"></i> Add Effect
+          </button>
+        </div>
+
+        <div class="effects-grid" id="effects-grid">
+          <!-- Effect items will be populated here -->
+        </div>
+      </section>
+
+      <!-- Users Management Section -->
+      <section id="users-section" class="content-section">
+        <div class="section-header">
+          <h2>Registered Users</h2>
+        </div>
+
+        <div class="table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Registration Date</th>
+                <th>Gifts Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body">
+              <!-- User items will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Gifts Management Section -->
+      <section id="gifts-section" class="content-section">
+        <div class="section-header">
+          <h2>All Gifts</h2>
+        </div>
+
+        <div class="table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Gift ID</th>
+                <th>Recipient</th>
+                <th>Sender</th>
+                <th>Moment Type</th>
+                <th>Created Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="gifts-table-body">
+              <!-- Gift items will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Add Music Modal -->
+  <div id="add-music-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add New Music</h2>
+        <button class="btn-close" onclick="closeAddMusicModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form id="add-music-form">
+        <div class="form-group">
+          <label>Song Title</label>
+          <input type="text" id="music-title" placeholder="Enter song title" required />
+        </div>
+
+        <div class="form-group">
+          <label>Artist</label>
+          <input type="text" id="music-artist" placeholder="Enter artist name" required />
+        </div>
+
+        <div class="form-group">
+          <label>Upload Music File</label>
+          <div class="admin-upload-area" id="admin-music-upload-area">
+            <input type="file" id="admin-music-file-input" accept="audio/*" style="display: none;" />
+            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+            <p class="upload-text">Click or drag & drop music file here</p>
+            <p class="upload-hint">Format: MP3, WAV, OGG (Max 10MB)</p>
+          </div>
+
+          <!-- Music Preview -->
+          <div id="admin-music-preview" class="admin-file-preview" style="display: none;">
+            <div class="preview-info">
+              <i class="fas fa-music"></i>
+              <span id="admin-music-file-name">music.mp3</span>
+              <span id="admin-music-file-size">2.5 MB</span>
+            </div>
+            <audio id="admin-music-preview-player" controls style="width: 100%; margin-top: 10px;"></audio>
+            <button type="button" class="btn-remove-file" onclick="removeAdminMusicPreview()">
+              <i class="fas fa-times"></i> Remove
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" onclick="closeAddMusicModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Add Music</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Effect Modal -->
+  <div id="add-effect-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add New Effect</h2>
+        <button class="btn-close" onclick="closeAddEffectModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form id="add-effect-form">
+        <div class="form-group">
+          <label>Effect Name</label>
+          <input type="text" id="effect-name" placeholder="Enter effect name" required />
+        </div>
+
+        <div class="form-group">
+          <label>Upload Effect Image</label>
+          <div class="admin-upload-area" id="admin-effect-upload-area">
+            <input type="file" id="admin-effect-file-input" accept="image/*" style="display: none;" />
+            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+            <p class="upload-text">Click or drag & drop effect image here</p>
+            <p class="upload-hint">Format: PNG, JPG, GIF (Max 2MB)</p>
+          </div>
+
+          <!-- Effect Preview -->
+          <div id="admin-effect-preview" class="admin-file-preview" style="display: none;">
+            <div class="preview-info">
+              <i class="fas fa-image"></i>
+              <span id="admin-effect-file-name">effect.png</span>
+              <span id="admin-effect-file-size">500 KB</span>
+            </div>
+            <img id="admin-effect-preview-image" src="#" alt="Effect Preview"
+              style="max-width: 100%; max-height: 200px; margin-top: 10px; border-radius: 8px;" />
+            <button type="button" class="btn-remove-file" onclick="removeAdminEffectPreview()">
+              <i class="fas fa-times"></i> Remove
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" onclick="closeAddEffectModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Add Effect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirm-modal" class="modal">
+    <div class="modal-content modal-small">
+      <div class="modal-header">
+        <h2>Confirm Action</h2>
+      </div>
+
+      <div class="modal-body">
+        <p id="confirm-message">Are you sure you want to proceed?</p>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="closeConfirmModal()">Cancel</button>
+        <button type="button" class="btn-danger" id="confirm-action-btn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="file-upload-utils.js"></script>
+  <script src="admin-upload-handlers.js"></script>
+  <script src="admin-script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amplop Surat Spesial</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Georgia", serif;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        overflow-x: hidden;
+      }
+
+      .container {
+        position: relative;
+        width: 100%;
+        max-width: 500px;
+        perspective: 1000px;
+      }
+
+      .envelope {
+        width: 100%;
+        height: 300px;
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+      }
+
+      .envelope:hover {
+        transform: scale(1.05);
+      }
+
+      .envelope-base {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        border: 3px solid #81c784;
+        border-radius: 5px;
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      .envelope-flap {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 50%;
+        background: linear-gradient(135deg, #a5d6a7 0%, #81c784 100%);
+        transform-origin: top center;
+        transition: transform 0.8s ease;
+        border-bottom: 3px solid #81c784;
+        clip-path: polygon(0 0, 100% 0, 50% 100%);
+        z-index: 3;
+      }
+
+      .envelope.opened .envelope-flap {
+        transform: rotateX(180deg);
+      }
+
+      .envelope-seal {
+        position: absolute;
+        top: 45%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        background: #ff6b6b;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2em;
+        z-index: 4;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        transition: all 0.5s ease;
+      }
+
+      .envelope.opened .envelope-seal {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0);
+      }
+
+      .click-instruction {
+        position: absolute;
+        bottom: -50px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #fff;
+        font-size: 1.2em;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        animation: pulse 2s infinite;
+        white-space: nowrap;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .envelope.opened + .click-instruction {
+        display: none;
+      }
+
+      .letter-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        padding: 20px;
+        overflow-y: auto;
+      }
+
+      .letter-container.show {
+        display: flex;
+        animation: fadeIn 0.5s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+
+        to {
+          opacity: 1;
+        }
+      }
+
+      .letter {
+        background: #fff;
+        padding: 40px;
+        border-radius: 10px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        position: relative;
+        animation: slideUp 0.8s ease;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(100px);
+          opacity: 0;
+        }
+
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 35px;
+        height: 35px;
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        font-size: 1.5em;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        z-index: 10;
+      }
+
+      .close-btn:hover {
+        background: #ff5252;
+        transform: rotate(90deg);
+      }
+
+      .photo-frame {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto 30px;
+        border: 5px solid #81c784;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .photo-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .photo-placeholder {
+        font-size: 5em;
+        color: #81c784;
+      }
+
+      .letter-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .letter-header h1 {
+        color: #2e7d32;
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .letter-date {
+        color: #666;
+        font-style: italic;
+        margin-bottom: 20px;
+      }
+
+      .letter-body {
+        line-height: 1.8;
+        color: #333;
+        text-align: justify;
+        margin-bottom: 30px;
+      }
+
+      .letter-body p {
+        margin-bottom: 15px;
+      }
+
+      .letter-signature {
+        text-align: right;
+        font-style: italic;
+        color: #2e7d32;
+        margin-top: 30px;
+        font-size: 1.2em;
+      }
+
+      .hearts {
+        position: fixed;
+        pointer-events: none;
+        z-index: 999;
+      }
+
+      .heart {
+        position: absolute;
+        font-size: 2em;
+        animation: floatHeart 4s ease-in infinite;
+      }
+
+      @keyframes floatHeart {
+        0% {
+          transform: translateY(0) scale(0) rotate(0deg);
+          opacity: 0;
+        }
+
+        50% {
+          opacity: 1;
+        }
+
+        100% {
+          transform: translateY(-100vh) scale(1.5) rotate(180deg);
+          opacity: 0;
+        }
+      }
+
+      /* Scrollbar styling */
+      .letter::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .letter::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      .letter::-webkit-scrollbar-thumb {
+        background: #81c784;
+        border-radius: 10px;
+      }
+
+      .letter::-webkit-scrollbar-thumb:hover {
+        background: #66bb6a;
+      }
+
+      @media (max-width: 600px) {
+        .letter {
+          padding: 30px 20px;
+        }
+
+        .letter-header h1 {
+          font-size: 2em;
+        }
+
+        .photo-frame {
+          width: 150px;
+          height: 150px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="envelope" id="envelope" onclick="openEnvelope()">
+        <div class="envelope-base"></div>
+        <div class="envelope-flap"></div>
+        <div class="envelope-seal">💌</div>
+      </div>
+      <div class="click-instruction">Klik amplop untuk membuka surat</div>
+    </div>
+
+    <div class="letter-container" id="letterContainer">
+      <div class="letter">
+        <button class="close-btn" onclick="closeLetter()">×</button>
+
+        <div class="photo-frame">
+          <!-- Ganti dengan URL foto atau gunakan emoji sebagai placeholder -->
+          <div class="photo-placeholder">🎁</div>
+          <!-- Untuk menambahkan foto, gunakan:
+                <img src="URL_FOTO_ANDA" alt="Foto"> -->
+        </div>
+
+        <div class="letter-header">
+          <h1>Untuk Orang Spesial</h1>
+          <p class="letter-date">8 Desember 2025</p>
+        </div>
+
+        <div class="letter-body">
+          <p>Hai Sahabatku yang Terkasih,</p>
+
+          <p>
+            Surat ini kubuat dengan penuh kehangatan dan kasih sayang untukmu.
+            Di hari yang indah ini, aku ingin mengucapkan terima kasih atas
+            kehadiranmu dalam hidupku.
+          </p>
+
+          <p>
+            Kamu adalah orang yang luar biasa! Senyummu mampu mencerahkan hari
+            yang paling kelam, tawamu adalah melodi terindah, dan kebaikanmu
+            selalu menginspirasi.
+          </p>
+
+          <p>
+            Semoga hari-harimu selalu dipenuhi dengan kebahagiaan, kesuksesan,
+            dan cinta. Jangan pernah berhenti bermimpi dan mengejar apa yang
+            kamu inginkan. Ingatlah bahwa kamu sangat berharga dan sangat
+            dicintai.
+          </p>
+
+          <p>
+            Teruslah bersinar seperti bintang di langit malam, karena dunia ini
+            menjadi lebih indah dengan kehadiranmu.
+          </p>
+        </div>
+
+        <div class="letter-signature">
+          Dengan penuh kasih sayang,<br />
+          ❤ Seseorang yang peduli padamu ❤
+        </div>
+      </div>
+    </div>
+
+    <div class="hearts" id="hearts"></div>
+
+    <script>
+      function openEnvelope() {
+        const envelope = document.getElementById("envelope");
+        const letterContainer = document.getElementById("letterContainer");
+
+        envelope.classList.add("opened");
+
+        setTimeout(() => {
+          letterContainer.classList.add("show");
+          createHearts();
+        }, 800);
+      }
+
+      function closeLetter() {
+        const letterContainer = document.getElementById("letterContainer");
+        const envelope = document.getElementById("envelope");
+
+        letterContainer.classList.remove("show");
+        envelope.classList.remove("opened");
+      }
+
+      function createHearts() {
+        const heartsContainer = document.getElementById("hearts");
+        const hearts = ["❤", "💖", "💕", "💗", "💓", "💝"];
+
+        for (let i = 0; i < 20; i++) {
+          setTimeout(() => {
+            const heart = document.createElement("div");
+            heart.className = "heart";
+            heart.textContent =
+              hearts[Math.floor(Math.random() * hearts.length)];
+            heart.style.left = Math.random() * 100 + "%";
+            heart.style.animationDelay = Math.random() * 2 + "s";
+            heart.style.animationDuration = 3 + Math.random() * 2 + "s";
+            heartsContainer.appendChild(heart);
+
+            setTimeout(() => heart.remove(), 5000);
+          }, i * 100);
+        }
+      }
+
+      // Close letter when clicking outside
+      document
+        .getElementById("letterContainer")
+        .addEventListener("click", function (e) {
+          if (e.target === this) {
+            closeLetter();
+          }
+        });
+
+      // Close with Escape key
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          closeLetter();
+        }
+      });
+    </script>
+  </body>
+</html>
