@@ -131,10 +131,13 @@ function removeMusicPreview() {
  * Load admin music library
  */
 function loadAdminMusicLibrary() {
-    const adminLibrary = getAdminMusicLibrary();
     const grid = document.getElementById('music-library-grid');
-    
     if (!grid) return;
+    
+    // Clear the grid first to avoid duplicates
+    grid.innerHTML = '';
+    
+    const adminLibrary = getAdminMusicLibrary();
     
     // Default system songs
     const defaultSongs = [
@@ -385,10 +388,7 @@ function showMusicSelection() {
         // Load admin library (refresh)
         const grid = document.getElementById('music-library-grid');
         if (grid) {
-            // Remove admin items to avoid duplicates
-            grid.querySelectorAll('[data-type="admin"]').forEach(item => item.remove());
-            
-            // Reload admin library
+            // Reload admin library (this function now clears the grid automatically)
             loadAdminMusicLibrary();
         }
         
