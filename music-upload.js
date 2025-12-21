@@ -136,6 +136,21 @@ function loadAdminMusicLibrary() {
     
     if (!grid) return;
     
+    // Default system songs
+    const defaultSongs = [
+        { id: 'default_1', name: 'Happy Birthday Song 1', src: 'Assets/happy-birthday-334876.mp3' },
+        { id: 'default_2', name: 'Happy Birthday Song 2', src: 'Assets/happy-birthday-357371.mp3' },
+        { id: 'default_3', name: 'Happy Birthday Song 3', src: 'Assets/happy-birthday-401919.mp3' },
+        { id: 'default_4', name: 'Romantic & Love', src: 'Assets/💗 Romantic & Love (Royalty Free Music) - ROMANTIC by Alex Productions 🇮🇹 - BreakingCopyright — Royalty Free Music.mp3' },
+        { id: 'default_5', name: 'Education Background', src: 'Assets/Education Background Music Study Royalty Free - backgroundmusicforvideoedits.mp3' }
+    ];
+
+    // Add default items
+    defaultSongs.forEach(music => {
+        const item = createMusicLibraryItem(music.name, music.src, 'default', music.id);
+        grid.appendChild(item);
+    });
+
     // Add admin library items
     adminLibrary.forEach(music => {
         const item = createMusicLibraryItem(music.name, music.data, 'admin', music.id);
