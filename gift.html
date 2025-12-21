@@ -617,6 +617,20 @@
             }
         }
 
+        function hasPhoto(letterIndex = 0) {
+            if (!giftData) return false;
+            let imageData;
+            if (letterIndex === 0) {
+                imageData = giftData.imageData;
+            } else {
+                const collabIndex = letterIndex - 1;
+                if (giftData.collaborators && giftData.collaborators[collabIndex]) {
+                    imageData = giftData.collaborators[collabIndex].imageData;
+                }
+            }
+            return imageData && imageData !== '#' && imageData.length > 50;
+        }
+
         function updateNavButtons() {
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
@@ -636,10 +650,21 @@
             }
 
             // Update next button
+            const noPhoto = !hasPhoto(currentLetterIndex);
+            
             if (currentStage === 5 && currentLetterIndex < totalLetters - 1) {
                 nextBtn.disabled = false;
                 nextBtn.textContent = 'Surat Selanjutnya →';
                 nextBtn.onclick = nextLetter;
+            } else if (currentStage === 4 && noPhoto) {
+                if (currentLetterIndex < totalLetters - 1) {
+                    nextBtn.disabled = false;
+                    nextBtn.textContent = 'Surat Selanjutnya →';
+                    nextBtn.onclick = nextLetter;
+                } else {
+                    nextBtn.disabled = true;
+                    nextBtn.textContent = 'Selesai';
+                }
             } else if (currentStage < 5) {
                 nextBtn.disabled = false;
                 nextBtn.textContent = 'Next →';
@@ -1024,6 +1049,20 @@
             }
             
             document.getElementById('senderSignature').innerHTML = signatureHtml;
+
+            // Update instruction if no photo
+            const instruction = document.querySelector('#stage4 .click-instruction');
+            if (instruction) {
+                if (hasPhoto(letterIndex)) {
+                    instruction.textContent = 'Klik Next untuk melihat foto';
+                } else {
+                    if (letterIndex < totalLetters - 1) {
+                        instruction.textContent = 'Klik Next untuk surat selanjutnya';
+                    } else {
+                        instruction.textContent = 'Kado selesai ✨';
+                    }
+                }
+            }
 
             // Apply customizations (background and font color)
             applyCustomizations();
