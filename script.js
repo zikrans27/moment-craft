@@ -588,8 +588,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- EFFECT SELECTION LOGIC ---
 const effects = [
-    { id: 'balloon', name: 'Balloon', icon: '🎈' },
-    { id: 'sparkle', name: 'Sparkle', icon: '✨' },
+    { id: 'balloon', name: 'Balloon', image: 'Assets/baloon.png' },
+    { id: 'sparkles', name: 'Sparkle', image: 'Assets/sparkle.png' },
+    { id: 'confetti', name: 'Confetti', image: 'Assets/18056-removebg-preview.png' },
+    { id: 'hearts', name: 'Hearts', image: 'Assets/11571056.png' },
+    { id: 'time', name: 'Time', image: 'Assets/Anything Worth having takes time (9).png' }
 ];
 
 const backgrounds = [
@@ -621,23 +624,22 @@ function renderEffects() {
     const allEffects = [...effects, ...adminEffects.map(e => ({ id: e.id, name: e.name, data: e.data }))];
     
     allEffects.forEach(effect => {
-        const isActive = effect.id === selectedEffectId ? 'selected' : '';
+        const isActive = effect.id === selectedEffectId ? 'active' : '';
         const item = document.createElement('div');
         item.className = `effect-item ${isActive}`;
         item.dataset.effectId = effect.id;
         
-        // Show image if available (admin effect), otherwise show icon (default effect)
-        const display = effect.data 
-            ? `<img src="${effect.data}" alt="${effect.name}" style="width: 40px; height: 40px; object-fit: contain;" />`
-            : `<div class="effect-icon">${effect.icon}</div>`;
+        const display = (effect.data || effect.image)
+            ? `<img src="${effect.data || effect.image}" alt="${effect.name}" style="width: 40px; height: 40px; object-fit: contain;" />`
+            : `<div class="effect-icon">${effect.icon || '✨'}</div>`;
             
         item.innerHTML = `
             ${display}
             <div class="effect-name">${effect.name}</div>
         `;
         item.addEventListener('click', () => {
-            document.querySelectorAll('.effect-item').forEach(e => e.classList.remove('selected'));
-            item.classList.add('selected');
+            document.querySelectorAll('.effect-item').forEach(e => e.classList.remove('active'));
+            item.classList.add('active');
             selectedEffectId = effect.id;
         });
         container.appendChild(item);
