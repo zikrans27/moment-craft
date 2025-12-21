@@ -69,11 +69,15 @@ function initDashboard() {
   loadRecentActivity();
   loadMusicTable();
   loadEffectsGrid();
+  loadBackgroundsGrid();
   loadUsersTable();
   loadGiftsTable();
 
   // Initialize form handlers
   initFormHandlers();
+
+  // Initialize mobile sidebar
+  initMobileSidebar();
 }
 
 // ===== NAVIGATION =====
@@ -109,13 +113,38 @@ function initNavigation() {
         'overview': 'Dashboard Overview',
         'music': 'Music Management',
         'effects': 'Effects Management',
+        'backgrounds': 'Background Management',
         'users': 'User Management',
         'gifts': 'Gifts Management'
       };
 
       document.getElementById('section-title').textContent = titles[section] || 'Dashboard';
+
+      // Close sidebar on mobile after clicking
+      if (window.innerWidth <= 768) {
+        document.querySelector('.admin-sidebar').classList.remove('active');
+        document.getElementById('sidebar-overlay').classList.remove('active');
+      }
     });
   });
+}
+
+function initMobileSidebar() {
+  const toggleBtn = document.getElementById('sidebar-toggle');
+  const sidebar = document.querySelector('.admin-sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+
+  if (toggleBtn && sidebar && overlay) {
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.add('active');
+      overlay.classList.add('active');
+    });
+
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+    });
+  }
 }
 
 // ===== DASHBOARD STATS =====
@@ -125,12 +154,17 @@ function loadDashboardStats() {
   const gifts = getAllGifts();
   const music = getAdminMusic();
   const effects = getAdminEffects();
+  const backgrounds = getAdminBackgrounds();
 
   // Update stats
   document.getElementById('total-users').textContent = users.length;
   document.getElementById('total-gifts').textContent = gifts.length;
   document.getElementById('total-music').textContent = music.length;
   document.getElementById('total-effects').textContent = effects.length;
+  
+  // Update backgrounds stat if it exists
+  const bgStat = document.getElementById('total-backgrounds');
+  if (bgStat) bgStat.textContent = backgrounds.length;
 }
 
 // ===== RECENT ACTIVITY =====
@@ -175,7 +209,9 @@ function getAdminMusic() {
   const defaultSongs = [
     { id: 'default_1', title: 'Happy Birthday Song 1', artist: 'Classical', fileName: 'happy-birthday-334876.mp3', isDefault: true },
     { id: 'default_2', title: 'Happy Birthday Song 2', artist: 'Upbeat', fileName: 'happy-birthday-357371.mp3', isDefault: true },
-    { id: 'default_3', title: 'Happy Birthday Song 3', artist: 'Modern', fileName: 'happy-birthday-401919.mp3', isDefault: true }
+    { id: 'default_3', title: 'Happy Birthday Song 3', artist: 'Modern', fileName: 'happy-birthday-401919.mp3', isDefault: true },
+    { id: 'default_4', title: 'Romantic & Love', artist: 'Alex Productions', fileName: '💗 Romantic & Love (Royalty Free Music) - ROMANTIC by Alex Productions 🇮🇹 - BreakingCopyright — Royalty Free Music.mp3', isDefault: true },
+    { id: 'default_5', title: 'Education Background', artist: 'Study Music', fileName: 'Education Background Music Study Royalty Free - backgroundmusicforvideoedits.mp3', isDefault: true }
   ];
   
   return [...defaultSongs, ...adminUploaded];
@@ -287,11 +323,13 @@ function viewMusic(id) {
 // ===== EFFECTS MANAGEMENT =====
 function getAdminEffects() {
   const effects = localStorage.getItem('adminEffects');
+  const now = new Date().toISOString();
   return effects ? JSON.parse(effects) : [
-    { id: 'balloon', name: 'Balloon', icon: '🎈', addedDate: new Date().toISOString() },
-    { id: 'sparkle', name: 'Sparkle', icon: '✨', addedDate: new Date().toISOString() },
-    { id: 'confetti', name: 'Confetti', icon: '🎉', addedDate: new Date().toISOString() },
-    { id: 'hearts', name: 'Hearts', icon: '💕', addedDate: new Date().toISOString() }
+    { id: 'balloon', name: 'Balloon', image: 'Assets/baloon.png', addedDate: now },
+    { id: 'sparkles', name: 'Sparkle', image: 'Assets/sparkle.png', addedDate: now },
+    { id: 'confetti', name: 'Confetti', image: 'Assets/18056-removebg-preview.png', addedDate: now },
+    { id: 'hearts', name: 'Hearts', image: 'Assets/11571056.png', addedDate: now },
+    { id: 'time', name: 'Time', image: 'Assets/Anything Worth having takes time (9).png', addedDate: now }
   ];
 }
 
@@ -314,9 +352,10 @@ function loadEffectsGrid() {
   }
 
   grid.innerHTML = effects.map(effect => {
-    // Show image if data available (new format), otherwise show icon (old format)
-    const effectDisplay = effect.data
-      ? `<img src="${effect.data}" alt="${effect.name}" style="width: 100px; height: 100px; object-fit: contain; border-radius: 10px;" />`
+    // Show image if data or image path available, otherwise show icon
+    const displaySrc = effect.data || effect.image;
+    const effectDisplay = displaySrc
+      ? `<img src="${displaySrc}" alt="${effect.name}" style="width: 100px; height: 100px; object-fit: contain; border-radius: 10px;" />`
       : `<div class="effect-card-icon">${effect.icon || '✨'}</div>`;
 
     return `
@@ -371,6 +410,99 @@ function deleteEffect(id) {
       }
       
       loadEffectsGrid();
+      loadDashboardStats();
+      closeConfirmModal();
+    }
+  );
+}
+
+// ===== BACKGROUNDS MANAGEMENT =====
+function getAdminBackgrounds() {
+  const backgrounds = localStorage.getItem('adminBackgrounds');
+  return backgrounds ? JSON.parse(backgrounds) : [
+    { id: 'bg1', name: 'Dark', image: 'Assets/bg1.png', addedDate: new Date().toISOString() },
+    { id: 'bg2', name: 'Starlight', image: 'Assets/bg2.png', addedDate: new Date().toISOString() },
+    { id: 'bg3', name: 'Hearts', image: 'Assets/bg3.png', addedDate: new Date().toISOString() },
+    { id: 'bg4', name: 'Cherry Bomb', image: 'Assets/bg4.png', addedDate: new Date().toISOString() }
+  ];
+}
+
+function saveAdminBackgrounds(backgrounds) {
+  localStorage.setItem('adminBackgrounds', JSON.stringify(backgrounds));
+}
+
+function loadBackgroundsGrid() {
+  const grid = document.getElementById('backgrounds-grid');
+  if (!grid) return;
+  const backgrounds = getAdminBackgrounds();
+
+  if (backgrounds.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column: 1 / -1;">
+        <i class="fas fa-image"></i>
+        <p>No backgrounds found</p>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = backgrounds.map(bg => {
+    // Show image if data available (new format), otherwise show asset path
+    const bgDisplay = bg.data || bg.image
+      ? `<img src="${bg.data || bg.image}" alt="${bg.name}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px;" />`
+      : `<div class="effect-card-icon"><i class="fas fa-image"></i></div>`;
+
+    return `
+      <div class="effect-card">
+        ${bgDisplay}
+        <div class="effect-card-name">${bg.name}</div>
+        <div class="effect-card-actions">
+          <button class="btn-action btn-delete" onclick="deleteBackground('${bg.id}')">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function showAddBackgroundModal() {
+  document.getElementById('add-background-modal').classList.add('active');
+}
+
+function closeAddBackgroundModal() {
+  document.getElementById('add-background-modal').classList.remove('active');
+  document.getElementById('add-background-form').reset();
+}
+
+function addBackground(bgData) {
+  const backgrounds = getAdminBackgrounds();
+  const newBackground = {
+    ...bgData,
+    addedDate: new Date().toISOString()
+  };
+
+  backgrounds.push(newBackground);
+  saveAdminBackgrounds(backgrounds);
+  loadBackgroundsGrid();
+  loadDashboardStats();
+  closeAddBackgroundModal();
+}
+
+function deleteBackground(id) {
+  showConfirmModal(
+    'Are you sure you want to delete this background?',
+    () => {
+      const backgrounds = getAdminBackgrounds();
+      const filtered = backgrounds.filter(b => b.id !== id);
+      saveAdminBackgrounds(filtered);
+      
+      // Also remove from adminBackgroundLibrary for user side
+      if (typeof removeFromAdminBackgroundLibrary === 'function') {
+        removeFromAdminBackgroundLibrary(id);
+      }
+      
+      loadBackgroundsGrid();
       loadDashboardStats();
       closeConfirmModal();
     }
@@ -597,6 +729,41 @@ function initFormHandlers() {
         resetAdminEffectForm();
 
         alert('Effect added successfully!');
+      }
+    });
+  }
+
+  // Add Background Form
+  const addBackgroundForm = document.getElementById('add-background-form');
+  if (addBackgroundForm) {
+    addBackgroundForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      // Get form data from admin-upload-handlers.js
+      const formData = getAdminBackgroundFormData();
+
+      if (!formData) {
+        return; // Validation failed, alert already shown
+      }
+
+      // Add to admin background library using file-upload-utils.js
+      const bgAdded = addToAdminBackgroundLibrary(formData.name, formData.data);
+
+      if (bgAdded) {
+        // Also save to old format for admin panel grid
+        const bgData = {
+          id: 'bg_' + Date.now(),
+          name: formData.name,
+          fileName: formData.fileName,
+          data: formData.data
+        };
+
+        addBackground(bgData);
+
+        // Reset form
+        resetAdminBackgroundForm();
+
+        alert('Background added successfully!');
       }
     });
   }
