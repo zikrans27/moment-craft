@@ -31,6 +31,7 @@
             width: 100%;
             max-width: 600px;
             height: 500px; /* Increased to fit taller envelope */
+            z-index: 10;
         }
 
         /* Stage 1: Closed Envelope */
@@ -178,7 +179,6 @@
             border-radius: 15px;
             padding: 60px 40px;
             position: relative;
-            overflow: hidden;
         }
 
         .letter-content {
@@ -705,35 +705,45 @@
                     document.body.appendChild(effectContainer);
                 }
 
-                if (selectedEffect === 'balloon') {
-                    createBalloons(effectContainer);
-                } else if (selectedEffect === 'sparkle' || selectedEffect === 'sparkles') {
-                    createGlobalSparkles(effectContainer);
+                // Increase sizes and ensure they are behind
+                // NEW: Default effects now use images too
+                const defaultEffectData = {
+                    'balloon': 'Assets/baloon.png',
+                    'sparkle': 'Assets/sparkle.png',
+                    'sparkles': 'Assets/sparkle.png',
+                    'confetti': 'Assets/18056-removebg-preview.png',
+                    'hearts': 'Assets/11571056.png',
+                    'time': 'Assets/Anything Worth having takes time (9).png'
+                };
+
+                if (defaultEffectData[selectedEffect]) {
+                    createAdminCustomEffect(effectContainer, defaultEffectData[selectedEffect], true);
                 } else {
                     // Check if it's an admin effect
                     const adminEffects = JSON.parse(localStorage.getItem('adminEffectLibrary') || '[]');
                     const adminEffect = adminEffects.find(e => e.id === selectedEffect);
                     if (adminEffect) {
-                        createAdminCustomEffect(effectContainer, adminEffect.data);
+                        createAdminCustomEffect(effectContainer, adminEffect.data, true);
                     }
                 }
             }
         }
 
-        function createGlobalSparkles(container) {
-            const sparkleCount = 10;
+        function createGlobalSparkles(container, isLarge = false) {
+            const sparkleCount = 15;
+            const size = isLarge ? 80 : 30;
 
             for (let i = 0; i < sparkleCount; i++) {
                 const sparkle = document.createElement('div');
                 sparkle.className = 'sparkle';
                 sparkle.style.cssText = `
                     position: absolute;
-                    width: 30px;
-                    height: 30px;
+                    width: ${size}px;
+                    height: ${size}px;
                     background-image: url('Assets/sparkle.png');
                     background-size: contain;
                     animation: sparkle-float 3s infinite ease-in-out;
-                    opacity: 0.7;
+                    opacity: 0.6;
                     left: ${Math.random() * 100}%;
                     top: ${Math.random() * 100}%;
                     animation-delay: ${Math.random() * 3}s;
@@ -808,28 +818,36 @@
             // Clear existing effects
             sparklesContainer.innerHTML = '';
 
-            if (selectedEffect === 'balloon') {
-                createBalloons(sparklesContainer);
-            } else if (selectedEffect === 'sparkle') {
-                createSparkles();
+            const defaultEffectData = {
+                'balloon': 'Assets/baloon.png',
+                'sparkle': 'Assets/sparkle.png',
+                'sparkles': 'Assets/sparkle.png',
+                'confetti': 'Assets/18056-removebg-preview.png',
+                'hearts': 'Assets/11571056.png',
+                'time': 'Assets/Anything Worth having takes time (9).png'
+            };
+
+            if (defaultEffectData[selectedEffect]) {
+                createAdminCustomEffect(sparklesContainer, defaultEffectData[selectedEffect], true);
             } else if (selectedEffect) {
                 // Check if it's an admin effect
                 const adminEffects = JSON.parse(localStorage.getItem('adminEffectLibrary') || '[]');
                 const adminEffect = adminEffects.find(e => e.id === selectedEffect);
                 if (adminEffect) {
-                    createAdminCustomEffect(sparklesContainer, adminEffect.data);
+                    createAdminCustomEffect(sparklesContainer, adminEffect.data, true);
                 }
             }
         }
 
-        function createAdminCustomEffect(container, imageData) {
-            const count = 10;
+        function createAdminCustomEffect(container, imageData, isLarge = false) {
+            const count = 12;
+            const size = isLarge ? 80 : 40;
             for (let i = 0; i < count; i++) {
                 const item = document.createElement('div');
                 item.style.cssText = `
                     position: absolute;
-                    width: 40px;
-                    height: 40px;
+                    width: ${size}px;
+                    height: ${size}px;
                     background-image: url('${imageData}');
                     background-size: contain;
                     background-repeat: no-repeat;
@@ -839,14 +857,16 @@
                     animation-delay: ${Math.random() * 2}s;
                     opacity: 0.8;
                     pointer-events: none;
+                    z-index: -1;
                 `;
                 container.appendChild(item);
             }
         }
 
-        function createBalloons(container) {
-            const balloonCount = 6;
-            const balloonEmojis = ['🎈', '🎈', '🎈', '🎈', '🎈', '🎈'];
+        function createBalloons(container, isLarge = false) {
+            const balloonCount = 8;
+            const balloonEmojis = ['🎈', '🎈', '🎈', '🎈', '🎈', '🎈', '🎈', '🎈'];
+            const fontSize = isLarge ? 100 : 40;
 
             for (let i = 0; i < balloonCount; i++) {
                 const balloon = document.createElement('div');
@@ -854,12 +874,13 @@
                 balloon.textContent = balloonEmojis[i];
                 balloon.style.cssText = `
                     position: absolute;
-                    font-size: 40px;
+                    font-size: ${fontSize}px;
                     left: ${Math.random() * 100}%;
-                    bottom: -50px;
-                    animation: balloon-float ${5 + Math.random() * 3}s infinite ease-in-out;
-                    animation-delay: ${Math.random() * 2}s;
-                    opacity: 0.8;
+                    bottom: -150px;
+                    animation: balloon-float ${6 + Math.random() * 4}s infinite ease-in-out;
+                    animation-delay: ${Math.random() * 3}s;
+                    opacity: 0.7;
+                    z-index: -1;
                 `;
                 container.appendChild(balloon);
             }
@@ -970,17 +991,39 @@
                     year: 'numeric'
                 });
 
-            // Set greeting
-            document.getElementById('greetingText').textContent =
-                `Hai ${letterData.recipientName || 'Sahabatku'},`;
+            // Set greeting based on moment type
+            const recipient = letterData.recipientName || 'Sahabatku';
+            let greeting = '';
+            
+            if (letterData.momentType === 'Birthday') {
+                greeting = `Selamat Ulang Tahun, ${recipient}!`;
+            } else if (letterData.momentType === 'Graduation') {
+                greeting = `Selamat Wisuda, ${recipient}!`;
+            } else {
+                // Default / Love Letter
+                greeting = `Hai ${recipient} Tersayang,`;
+            }
+            
+            document.getElementById('greetingText').textContent = greeting;
 
             // Set message
             document.getElementById('giftMessage').textContent =
                 letterData.message || 'Pesan spesial untukmu...';
 
-            // Set sender signature
-            document.getElementById('senderSignature').innerHTML =
-                `Dengan penuh kasih sayang,<br />❤ ${letterData.senderName || 'Seseorang yang peduli padamu'} ❤`;
+            // Set sender signature based on moment type
+            let signatureHtml = '';
+            const senderName = letterData.senderName || 'Seseorang yang peduli padamu';
+            
+            if (letterData.momentType === 'Birthday') {
+                signatureHtml = `Selamat hari lahir & bahagia selalu,<br />🎂 ${senderName} 🎂`;
+            } else if (letterData.momentType === 'Graduation') {
+                signatureHtml = `Selamat atas pencapaian besarmu,<br />🎓 ${senderName} 🎓`;
+            } else {
+                // Default / Love Letter
+                signatureHtml = `Dengan penuh kasih sayang,<br />❤ ${senderName} ❤`;
+            }
+            
+            document.getElementById('senderSignature').innerHTML = signatureHtml;
 
             // Apply customizations (background and font color)
             applyCustomizations();
@@ -1008,19 +1051,94 @@
             }
         }
 
-        function createSparkles() {
-            const sparklesContainer = document.getElementById('sparkles');
-            const sparkleCount = 8;
-
-            for (let i = 0; i < sparkleCount; i++) {
-                const sparkle = document.createElement('div');
-                sparkle.className = 'sparkle';
-                sparkle.style.left = Math.random() * 100 + '%';
-                sparkle.style.top = Math.random() * 100 + '%';
-                sparkle.style.animationDelay = Math.random() * 3 + 's';
-                sparklesContainer.appendChild(sparkle);
+        function createConfetti(container, isLarge = false) {
+    const count = 30;
+    const colors = ['#f2d74e', '#95c3de', '#ff9a91', '#f2cede', '#ae99d1'];
+    const size = isLarge ? 20 : 10;
+    
+    for (let i = 0; i < count; i++) {
+        const confetti = document.createElement('div');
+        confetti.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            background-color: ${colors[Math.floor(Math.random() * colors.length)]};
+            left: ${Math.random() * 100}%;
+            top: -20px;
+            opacity: 0.8;
+            border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
+            animation: confetti-fall ${3 + Math.random() * 3}s linear infinite;
+            animation-delay: ${Math.random() * 5}s;
+            z-index: -1;
+        `;
+        container.appendChild(confetti);
+    }
+    
+    if (!document.getElementById('confetti-style')) {
+        const style = document.createElement('style');
+        style.id = 'confetti-style';
+        style.textContent = `
+            @keyframes confetti-fall {
+                0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+                100% { transform: translateY(100vh) rotate(720deg); opacity: 0.2; }
             }
-        }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+function createHearts(container, isLarge = false) {
+    const count = 12;
+    const size = isLarge ? 50 : 25;
+    const emojis = ['❤️', '💖', '💝', '💗', '💕'];
+    
+    for (let i = 0; i < count; i++) {
+        const heart = document.createElement('div');
+        heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        heart.style.cssText = `
+            position: absolute;
+            font-size: ${size}px;
+            left: ${Math.random() * 100}%;
+            bottom: -50px;
+            opacity: 0.8;
+            animation: heart-float ${5 + Math.random() * 5}s ease-in infinite;
+            animation-delay: ${Math.random() * 5}s;
+            z-index: -1;
+        `;
+        container.appendChild(heart);
+    }
+    
+    if (!document.getElementById('heart-style')) {
+        const style = document.createElement('style');
+        style.id = 'heart-style';
+        style.textContent = `
+            @keyframes heart-float {
+                0% { transform: translateY(0) scale(1) rotate(0); opacity: 0; }
+                20% { opacity: 0.8; }
+                100% { transform: translateY(-100vh) scale(1.5) rotate(20deg); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+function createSparkles(isLarge = false) {
+    const sparklesContainer = document.getElementById('sparkles');
+    const sparkleCount = 12;
+    const size = isLarge ? 60 : 30;
+
+    for (let i = 0; i < sparkleCount; i++) {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+        sparkle.style.width = size + 'px';
+        sparkle.style.height = size + 'px';
+        sparkle.style.left = Math.random() * 100 + '%';
+        sparkle.style.top = Math.random() * 100 + '%';
+        sparkle.style.animationDelay = Math.random() * 3 + 's';
+        sparkle.style.zIndex = '-1';
+        sparklesContainer.appendChild(sparkle);
+    }
+}
     </script>
 </body>
 
