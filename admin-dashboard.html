@@ -11,6 +11,7 @@
 
 <body>
   <div class="admin-dashboard">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <!-- Sidebar -->
     <aside class="admin-sidebar">
       <div class="sidebar-header">
@@ -30,6 +31,10 @@
         <a href="#" class="nav-item" data-section="effects">
           <i class="fas fa-magic"></i>
           <span>Manage Effects</span>
+        </a>
+        <a href="#" class="nav-item" data-section="backgrounds">
+          <i class="fas fa-image"></i>
+          <span>Manage Backgrounds</span>
         </a>
         <a href="#" class="nav-item" data-section="users">
           <i class="fas fa-users"></i>
@@ -52,6 +57,9 @@
     <!-- Main Content -->
     <main class="admin-main">
       <header class="admin-header">
+        <button id="sidebar-toggle" class="sidebar-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
         <h1 id="section-title">Dashboard Overview</h1>
         <div class="admin-user">
           <i class="fas fa-user-shield"></i>
@@ -99,6 +107,16 @@
             <div class="stat-info">
               <h3 id="total-effects">0</h3>
               <p>Effects</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-image"></i>
+            </div>
+            <div class="stat-info">
+              <h3 id="total-backgrounds">0</h3>
+              <p>Backgrounds</p>
             </div>
           </div>
         </div>
@@ -149,6 +167,20 @@
 
         <div class="effects-grid" id="effects-grid">
           <!-- Effect items will be populated here -->
+        </div>
+      </section>
+      
+      <!-- Background Management Section -->
+      <section id="backgrounds-section" class="content-section">
+        <div class="section-header">
+          <h2>Background Library</h2>
+          <button class="btn-add" onclick="showAddBackgroundModal()">
+            <i class="fas fa-plus"></i> Add Background
+          </button>
+        </div>
+
+        <div class="effects-grid" id="backgrounds-grid">
+          <!-- Background items will be populated here -->
         </div>
       </section>
 
@@ -298,6 +330,54 @@
         <div class="modal-actions">
           <button type="button" class="btn-cancel" onclick="closeAddEffectModal()">Cancel</button>
           <button type="submit" class="btn-submit">Add Effect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Background Modal -->
+  <div id="add-background-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add New Background</h2>
+        <button class="btn-close" onclick="closeAddBackgroundModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form id="add-background-form">
+        <div class="form-group">
+          <label>Background Name</label>
+          <input type="text" id="background-name" placeholder="Enter background name" required />
+        </div>
+
+        <div class="form-group">
+          <label>Upload Background Image</label>
+          <div class="admin-upload-area" id="admin-background-upload-area">
+            <input type="file" id="admin-background-file-input" accept="image/*" style="display: none;" />
+            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+            <p class="upload-text">Click or drag & drop background image here</p>
+            <p class="upload-hint">Format: PNG, JPG, GIF (Max 5MB)</p>
+          </div>
+
+          <!-- Background Preview -->
+          <div id="admin-background-preview" class="admin-file-preview" style="display: none;">
+            <div class="preview-info">
+              <i class="fas fa-image"></i>
+              <span id="admin-background-file-name">background.png</span>
+              <span id="admin-background-file-size">1.2 MB</span>
+            </div>
+            <img id="admin-background-preview-image" src="#" alt="Background Preview"
+              style="max-width: 100%; max-height: 200px; margin-top: 10px; border-radius: 8px;" />
+            <button type="button" class="btn-remove-file" onclick="removeAdminBackgroundPreview()">
+              <i class="fas fa-times"></i> Remove
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" onclick="closeAddBackgroundModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Add Background</button>
         </div>
       </form>
     </div>
