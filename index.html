@@ -23,7 +23,6 @@
     <div class="splash-content">
       <div class="logo">
         <img src="logo1.png" width="350" height="auto" margin-left="auto" margin="auto">
-        </svg>
       </div>
     </div>
   </div>
@@ -41,14 +40,14 @@
             <span>Surat Digital Interaktif</span>
           </div>
           <h1 class="hero-title">
-            Buat <span class="highlight">Surat Online</span><br/>
+            Buat <span class="highlight">Surat Online</span><br />
             Penuh Kenangan
           </h1>
           <p class="hero-description">
             MomentCraft adalah platform untuk membuat surat digital yang indah dan personal.
             Kirimkan ucapan, kenangan, dan momen spesial dengan cara yang unik dan berkesan.
           </p>
-          
+
           <div class="welcome-buttons">
             <button class="btn-gift" onclick="showPage('moment-selection')">
               <i class="fas fa-paper-plane"></i> Buat Surat Sekarang
@@ -58,7 +57,7 @@
             </button>
           </div>
         </div>
-        
+
         <div class="hero-visual">
           <div class="envelope-animation">
             <img src="amplop.png" class="floating-envelope" alt="Envelope">
@@ -80,7 +79,7 @@
             <h3>Musik Latar</h3>
             <p>Tambahkan musik favorit untuk membuat surat lebih berkesan</p>
           </div>
-          
+
           <div class="feature-card">
             <div class="feature-icon">
               <i class="fas fa-magic"></i>
@@ -88,7 +87,7 @@
             <h3>Efek Visual</h3>
             <p>Percantik surat dengan efek animasi yang menarik</p>
           </div>
-          
+
           <div class="feature-card">
             <div class="feature-icon">
               <i class="fas fa-image"></i>
@@ -96,7 +95,7 @@
             <h3>Foto & Background</h3>
             <p>Upload foto kenangan dan pilih background sesuai selera</p>
           </div>
-          
+
           <div class="feature-card">
             <div class="feature-icon">
               <i class="fas fa-share-alt"></i>
@@ -118,9 +117,9 @@
               <p>Pilih jenis momen: Ulang Tahun, Surat Cinta, atau Wisuda</p>
             </div>
           </div>
-          
+
           <div class="step-arrow">→</div>
-          
+
           <div class="step-item">
             <div class="step-number">2</div>
             <div class="step-content">
@@ -128,9 +127,9 @@
               <p>Tulis pesan, upload foto, tambah musik & efek</p>
             </div>
           </div>
-          
+
           <div class="step-arrow">→</div>
-          
+
           <div class="step-item">
             <div class="step-number">3</div>
             <div class="step-content">
@@ -251,7 +250,8 @@
           </div>
         </div>
         <div class="moment-card" onclick="startGiftCreation('Graduation')">
-          <img src="Assets/2210_w018_n002_1385a_p30_1385-removebg-preview.png" alt="Graduation" class="moment-card-img img-graduation">
+          <img src="Assets/2210_w018_n002_1385a_p30_1385-removebg-preview.png" alt="Graduation"
+            class="moment-card-img img-graduation">
           <div class="moment-card-content">
             <h3>Graduation</h3>
           </div>
@@ -264,7 +264,7 @@
     <div class="create-gift-container">
       <div class="gift-wrapper">
         <div class="gift-header">
-          <button on class="btn-back" onclick="showPage('moment-selection')">
+          <button class="btn-back" onclick="showPage('moment-selection')">
             <i class="fas fa-arrow-left"></i>
           </button>
           <h2 class="form-title" style="flex-grow: 1; margin: 0; font-size: 24px">
@@ -279,7 +279,7 @@
 
           <div class="sidebar-icons">
             <button type="button" class="icon-btn" onclick="showYouTubeMusic()">
-              <i class="fas fa-music" weidth=""></i>
+              <i class="fas fa-music"></i>
             </button>
             <button type="button" class="icon-btn" onclick="showEffectSelection()">
               <i class="fas fa-magic"></i>
@@ -339,7 +339,7 @@
           <button class="btn-success" id="copy-url-btn" onclick="copyGiftURL()">
             Salin URL
           </button>
-          n <button class="btn-success" id="share-btn" onclick="shareGift()">
+          <button class="btn-success" id="share-btn" onclick="shareGift()">
             Bagikan
           </button>
         </div>
@@ -385,11 +385,8 @@
       </div>
     </div>
   </div>
-  </div>
-  </div>
-  </div>
 
-  <!-- Music Selection Popup - MOVED OUTSIDE -->
+  <!-- Music Selection Popup -->
   <div id="youtube-music-overlay" class="youtube-music-overlay" onclick="closeYouTubeIfClickOutside(event)">
     <div id="youtube-music-page" class="youtube-music-modal">
       <div class="youtube-header">
@@ -415,30 +412,33 @@
         <h3 class="section-label">Pilih Musik dari Library</h3>
         <div class="music-library-grid" id="music-library-grid">
           <!-- Default music from Assets -->
-          <div class="music-item" data-type="default" data-src="Assets/happy-birthday-334876.mp3" data-name="Happy Birthday Song 1" data-category="Classical" onclick="selectMusicItem(this)">
+          <div class="music-item" data-type="default" data-src="Assets/happy-birthday-334876.mp3"
+            data-name="Happy Birthday Song 1" data-category="Classical" onclick="selectMusicItem(this)">
             <div class="music-item-icon">🎵</div>
             <div class="music-item-info">
               <div class="music-item-name">Happy Birthday Song 1</div>
               <div class="music-item-meta">Classical</div>
             </div>
           </div>
-          
-          <div class="music-item" data-type="default" data-src="Assets/happy-birthday-357371.mp3" data-name="Happy Birthday Song 2" data-category="Upbeat" onclick="selectMusicItem(this)">
+
+          <div class="music-item" data-type="default" data-src="Assets/happy-birthday-357371.mp3"
+            data-name="Happy Birthday Song 2" data-category="Upbeat" onclick="selectMusicItem(this)">
             <div class="music-item-icon">🎵</div>
             <div class="music-item-info">
               <div class="music-item-name">Happy Birthday Song 2</div>
               <div class="music-item-meta">Upbeat</div>
             </div>
           </div>
-          
-          <div class="music-item" data-type="default" data-src="Assets/happy-birthday-401919.mp3" data-name="Happy Birthday Song 3" data-category="Modern" onclick="selectMusicItem(this)">
+
+          <div class="music-item" data-type="default" data-src="Assets/happy-birthday-401919.mp3"
+            data-name="Happy Birthday Song 3" data-category="Modern" onclick="selectMusicItem(this)">
             <div class="music-item-icon">🎵</div>
             <div class="music-item-info">
               <div class="music-item-name">Happy Birthday Song 3</div>
               <div class="music-item-meta">Modern</div>
             </div>
           </div>
-          
+
           <!-- Admin library will be populated here -->
         </div>
       </div>
