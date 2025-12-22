@@ -631,7 +631,6 @@ const backgrounds = [
 ];
 
 const fontColors = [
-    { id: 'white', name: 'Putih', value: '#ffffff' },
     { id: 'black', name: 'Hitam', value: '#000000' },
     { id: 'brown', name: 'Coklat', value: '#8B4513' },
     { id: 'blue', name: 'Biru', value: '#0066cc' },
@@ -641,7 +640,7 @@ const fontColors = [
 
 let selectedEffectId = 'none';
 let selectedBackgroundId = 'bg1';
-let selectedFontColorId = 'white';
+let selectedFontColorId = 'black';
 
 function renderEffects() {
     const container = document.getElementById('effect-grid-container');
