@@ -606,12 +606,15 @@ function loadGiftsTable() {
     return;
   }
 
-  tbody.innerHTML = gifts.map(gift => `
+  tbody.innerHTML = gifts.map(gift => {
+    const letterCount = 1 + (gift.collaborators ? gift.collaborators.length : 0);
+    return `
     <tr>
-      <td><code>${gift.id.substring(0, 20)}...</code></td>
+      <td><code>${gift.id.substring(0, 15)}...</code></td>
       <td>${gift.recipientName || 'N/A'}</td>
       <td>${gift.senderName}</td>
       <td><span style="background: #2a0d3a; color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px;">${gift.momentType}</span></td>
+      <td><span style="background: #ff7b2d; color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px;">${letterCount} Letters</span></td>
       <td>${formatDate(gift.createdAt)}</td>
       <td>
         <div class="table-actions">
@@ -624,7 +627,7 @@ function loadGiftsTable() {
         </div>
       </td>
     </tr>
-  `).join('');
+  `}).join('');
 }
 
 function viewGift(id) {
