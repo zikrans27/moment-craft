@@ -172,16 +172,16 @@ function showLoginPopup(featureName, onLoginCallback) {
     // Login form submission
     document.getElementById('mini-login-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        
+
         // Set user as logged in
         setLoginStatus(true);
-        
+
         // Close popup
         document.body.removeChild(overlay);
-        
+
         // Show success message
         showMessageBox("Login Berhasil", "Selamat datang! Anda sekarang dapat menggunakan fitur " + featureName + ".");
-        
+
         // Execute callback after message box is closed
         setTimeout(() => {
             if (onLoginCallback) {
@@ -365,16 +365,16 @@ function showRegisterPopup(featureName, onLoginCallback) {
     // Register form submission
     document.getElementById('mini-register-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        
+
         // Set user as logged in
         setLoginStatus(true);
-        
+
         // Close popup
         document.body.removeChild(overlay);
-        
+
         // Show success message
-        showMessageBox("Registrasi Berhasil", "Akun berhasil dibuat! Anda sekarang dapat menggunakan fitur " + featureName + ".");
-        
+        showMessageBox("Registrasi Berhasil", "Akun berhasil dibuat! Anda sekarang sudah login.");
+
         // Execute callback after message box is closed
         setTimeout(() => {
             if (onLoginCallback) {
@@ -417,11 +417,14 @@ window.hideMessageBox = () => {
 
 // --- PAGE INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Clear previous music selection when starting new gift creation
-    // This ensures music player only shows if user actively selects music for THIS gift
+    // Clear previous selections when starting new gift creation
+    // This ensures customization only shows if user actively selects it for THIS gift
     localStorage.removeItem('selectedMusic');
-    console.log('✅ Music selection cleared - ready for new gift');
-    
+    localStorage.removeItem('selectedEffect');
+    localStorage.removeItem('selectedBackground');
+    localStorage.removeItem('selectedFontColor');
+    console.log('✅ Customization selections cleared - ready for new gift');
+
     // Check login status
     checkLoginStatus();
 });
@@ -494,11 +497,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const compressedImage = await compressImage(input.files[0]);
                     preview.src = compressedImage;
                     preview.style.display = 'block';
-                    
+
                     // Hide icon and status as requested
                     if (status) status.style.display = 'none';
                     if (icon) icon.style.display = 'none';
-                    
+
                     console.log('Image uploaded and UI updated');
                 } catch (error) {
                     console.error('Error compressing image:', error);
@@ -540,6 +543,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 const moment = giftData.momentType || 'Birthday';
                 document.getElementById('selected-moment').value = moment;
                 document.getElementById('current-moment-title').textContent = moment;
+
+                // Reset background to default (do not apply creator's background visually)
+                // The default style.css background will be used.
+
+                // Inherit and Persist settings in localStorage for the collaborator's session
+                // We typically want to respect the creator's choice (so the letter fits in),
+                // but the user requested: "background collaboration sesuaikan dengan background defaulnya"
+                // and "status effect dan musiknya di hapus saja".
+                
+                // Keep the values in variables so they are saved with the letter (if needed for consistency later),
+                // OR reset them if 'default' means 'no effect'. 
+                // However, usually collaboration letters should match the theme. 
+                // But the user specifically asked to remove the PREVIEW/STATUS of them.
+                
+                selectedEffectId = giftData.effect || 'none';
+                selectedBackgroundId = giftData.selectedBackground || 'bg1';
+                selectedFontColorId = giftData.selectedFontColor || 'white';
+
+                localStorage.setItem('selectedEffect', selectedEffectId);
+                localStorage.setItem('selectedBackground', selectedBackgroundId);
+                localStorage.setItem('selectedFontColor', selectedFontColorId);
+
+                // Hide the status displays for Effect and Music
+                const selectedInfos = document.querySelectorAll('.selected-info');
+                selectedInfos.forEach(el => el.style.display = 'none');
             }
 
             // Hide recipient name field and remove required attribute
@@ -580,7 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const musicData = JSON.parse(savedMusic);
         const musicDisplay = document.getElementById('music-display');
         if (musicDisplay) {
-            musicDisplay.textContent = `${musicData.title} - ${musicData.artist}`;
+            musicDisplay.textContent = (musicData.title || musicData.name) + (musicData.artist ? ` - ${musicData.artist}` : '');
         }
     }
 });
@@ -611,28 +639,28 @@ const fontColors = [
     { id: 'purple', name: 'Ungu', value: '#800080' }
 ];
 
-let selectedEffectId = 'balloon';
+let selectedEffectId = 'none';
 let selectedBackgroundId = 'bg1';
 let selectedFontColorId = 'white';
 
 function renderEffects() {
     const container = document.getElementById('effect-grid-container');
     container.innerHTML = '';
-    
+
     // Combine default and admin effects
     const adminEffects = typeof getAdminEffectLibrary === 'function' ? getAdminEffectLibrary() : [];
     const allEffects = [...effects, ...adminEffects.map(e => ({ id: e.id, name: e.name, data: e.data }))];
-    
+
     allEffects.forEach(effect => {
         const isActive = effect.id === selectedEffectId ? 'active' : '';
         const item = document.createElement('div');
         item.className = `effect-item ${isActive}`;
         item.dataset.effectId = effect.id;
-        
+
         const display = (effect.data || effect.image)
             ? `<img src="${effect.data || effect.image}" alt="${effect.name}" style="width: 40px; height: 40px; object-fit: contain;" />`
             : `<div class="effect-icon">${effect.icon || '✨'}</div>`;
-            
+
         item.innerHTML = `
             ${display}
             <div class="effect-name">${effect.name}</div>
@@ -649,11 +677,11 @@ function renderEffects() {
 function renderBackgrounds() {
     const container = document.getElementById('background-grid-container');
     container.innerHTML = '';
-    
+
     // Combine default and admin backgrounds
     const adminBackgrounds = typeof getAdminBackgroundLibrary === 'function' ? getAdminBackgroundLibrary() : [];
     const allBackgrounds = [...backgrounds, ...adminBackgrounds.map(bg => ({ id: bg.id, name: bg.name, image: bg.data }))];
-    
+
     allBackgrounds.forEach(bg => {
         const isActive = bg.id === selectedBackgroundId ? 'selected' : '';
         const item = document.createElement('div');
@@ -701,7 +729,7 @@ window.showEffectSelection = () => {
         });
         return;
     }
-    
+
     // Load saved selections from localStorage if they exist
     const savedEffect = localStorage.getItem('selectedEffect');
     const savedBackground = localStorage.getItem('selectedBackground');
@@ -732,10 +760,10 @@ window.applyEffect = () => {
     // Combine all to find the name
     const adminEffects = typeof getAdminEffectLibrary === 'function' ? getAdminEffectLibrary() : [];
     const allEffects = [...effects, ...adminEffects.map(e => ({ id: e.id, name: e.name }))];
-    
+
     const adminBackgrounds = typeof getAdminBackgroundLibrary === 'function' ? getAdminBackgroundLibrary() : [];
     const allBackgrounds = [...backgrounds, ...adminBackgrounds.map(bg => ({ id: bg.id, name: bg.name }))];
-    
+
     // Get selected names for display
     const effectName = allEffects.find(e => e.id === selectedEffectId)?.name || 'None';
     const backgroundName = allBackgrounds.find(b => b.id === selectedBackgroundId)?.name || 'Default';
@@ -748,6 +776,12 @@ window.applyEffect = () => {
 
     // Update display in form
     document.getElementById('effect-display').textContent = `${effectName}, ${backgroundName}, ${fontColorName}`;
+
+    // Update hidden input for form submission
+    const effectInput = document.getElementById('selected-effect');
+    if (effectInput) {
+        effectInput.value = selectedEffectId;
+    }
 
     hideEffectSelection();
 };
@@ -786,7 +820,8 @@ function handleGiftSubmission(event) {
             senderName,
             message,
             imageData,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            authorLoggedIn: isUserLoggedIn
         });
 
         // Save updated gift data
@@ -822,12 +857,13 @@ function handleGiftSubmission(event) {
             senderName,
             message,
             momentType,
-            effect: localStorage.getItem('selectedEffect') || 'balloon',
+            effect: localStorage.getItem('selectedEffect') || 'none',
             selectedBackground: localStorage.getItem('selectedBackground') || 'bg1',
             selectedFontColor: localStorage.getItem('selectedFontColor') || 'white',
             selectedMusic: JSON.parse(localStorage.getItem('selectedMusic') || 'null'),
             imageData,
             createdAt: new Date().toISOString(),
+            authorLoggedIn: isUserLoggedIn,
             collaborators: []
         };
 
@@ -900,12 +936,12 @@ window.shareGift = async () => {
 
 function handleLoginSubmission(event) {
     event.preventDefault();
-    
+
     // Set user as logged in
     setLoginStatus(true);
-    
+
     showMessageBox("Login Berhasil", "Selamat datang! Anda sekarang dapat menggunakan semua fitur.");
-    
+
     setTimeout(() => {
         showPage('moment-selection');
     }, 1000);
@@ -913,23 +949,23 @@ function handleLoginSubmission(event) {
 
 function handleRegisterSubmission(event) {
     event.preventDefault();
-    
+
     // Get form data
     const name = event.target.querySelector('input[type="text"]').value;
     const email = event.target.querySelector('input[type="email"]').value;
     const password = event.target.querySelector('input[type="password"]').value;
-    
+
     // Get existing users or create new array
     let registeredUsers = localStorage.getItem('registeredUsers');
     registeredUsers = registeredUsers ? JSON.parse(registeredUsers) : [];
-    
+
     // Check if user already exists
     const userExists = registeredUsers.some(user => user.email === email);
     if (userExists) {
         showMessageBox("Error", "Email sudah terdaftar. Silakan gunakan email lain atau login.");
         return;
     }
-    
+
     // Add new user
     const newUser = {
         name: name,
@@ -937,16 +973,16 @@ function handleRegisterSubmission(event) {
         password: password, // In production, this should be hashed
         registeredDate: new Date().toISOString()
     };
-    
+
     registeredUsers.push(newUser);
     localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-    
+
     // Set user as logged in
     setLoginStatus(true);
     localStorage.setItem('currentUser', JSON.stringify(newUser));
-    
+
     showMessageBox("Registrasi Berhasil", "Akun berhasil dibuat! Anda sekarang sudah login.");
-    
+
     setTimeout(() => {
         showPage('moment-selection');
     }, 1000);
@@ -968,7 +1004,7 @@ window.showCollaborationMode = () => {
         });
         return;
     }
-    
+
     // First, save current gift data to get gift ID
     const recipientNameField = document.getElementById('recipient-name');
     const recipientName = recipientNameField ? recipientNameField.value : '';
@@ -994,9 +1030,13 @@ window.showCollaborationMode = () => {
         senderName,
         message,
         momentType,
-        effect,
+        effect: localStorage.getItem('selectedEffect') || 'none',
+        selectedBackground: localStorage.getItem('selectedBackground') || 'bg1',
+        selectedFontColor: localStorage.getItem('selectedFontColor') || 'white',
+        selectedMusic: JSON.parse(localStorage.getItem('selectedMusic') || 'null'),
         imageData,
         createdAt: new Date().toISOString(),
+        authorLoggedIn: isUserLoggedIn,
         collaborators: [] // Array to store additional letters
     };
 
