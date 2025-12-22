@@ -555,6 +555,7 @@
                 if (currentStage === 4) {
                     populateLetterContent(currentLetterIndex);
                     document.getElementById('navButtons').style.display = 'flex';
+                    updateNavButtons();
                 }
 
                 // Show photo when reaching stage 5
@@ -628,17 +629,19 @@
                     imageData = giftData.collaborators[collabIndex].imageData;
                 }
             }
-            return imageData && imageData !== '#' && imageData.length > 50;
+            return imageData && imageData !== '#' && imageData.length > 10;
         }
 
         function updateNavButtons() {
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
+            const hasCPhoto = hasPhoto(currentLetterIndex);
 
             // Update prev button
             if (currentStage === 1 && currentLetterIndex === 0) {
                 prevBtn.disabled = true;
                 prevBtn.textContent = '← Kembali';
+                prevBtn.onclick = prevStage; // Default fallback
             } else if (currentStage === 1 && currentLetterIndex > 0) {
                 prevBtn.disabled = false;
                 prevBtn.textContent = '← Surat Sebelumnya';
@@ -650,13 +653,27 @@
             }
 
             // Update next button
-            const noPhoto = !hasPhoto(currentLetterIndex);
-            
-            if (currentStage === 5 && currentLetterIndex < totalLetters - 1) {
+            if (currentStage < 4) {
+                // Stages 1, 2, 3: Always go to next stage (Next →)
                 nextBtn.disabled = false;
-                nextBtn.textContent = 'Surat Selanjutnya →';
-                nextBtn.onclick = nextLetter;
-            } else if (currentStage === 4 && noPhoto) {
+                nextBtn.textContent = 'Next →';
+                nextBtn.onclick = nextStage;
+            } else if (currentStage === 4) {
+                // Stage 4: If has photo, go to Stage 5 (Next →). If no photo, go to next letter or finish.
+                if (hasCPhoto) {
+                    nextBtn.disabled = false;
+                    nextBtn.textContent = 'Next →';
+                    nextBtn.onclick = nextStage;
+                } else if (currentLetterIndex < totalLetters - 1) {
+                    nextBtn.disabled = false;
+                    nextBtn.textContent = 'Surat Selanjutnya →';
+                    nextBtn.onclick = nextLetter;
+                } else {
+                    nextBtn.disabled = true;
+                    nextBtn.textContent = 'Selesai';
+                }
+            } else if (currentStage === 5) {
+                // Stage 5 (Photo): Go to next letter or finish.
                 if (currentLetterIndex < totalLetters - 1) {
                     nextBtn.disabled = false;
                     nextBtn.textContent = 'Surat Selanjutnya →';
@@ -665,18 +682,18 @@
                     nextBtn.disabled = true;
                     nextBtn.textContent = 'Selesai';
                 }
-            } else if (currentStage < 5) {
-                nextBtn.disabled = false;
-                nextBtn.textContent = 'Next →';
-                nextBtn.onclick = nextStage;
-            } else {
-                nextBtn.disabled = true;
-                nextBtn.textContent = 'Selesai';
             }
         }
 
         function applyBackgroundAndEffect() {
             if (!giftData) return;
+            
+            // NEW: Only apply effects if the creator was logged in
+            // If authorLoggedIn is explicitly false, it means they created it without login
+            if (giftData.authorLoggedIn === false) {
+                console.log("Effects skipped because creator was not logged in.");
+                return; // Skip both background and visual effects
+            }
             
             // Apply background pattern from the gift data
             const selectedBackground = giftData.selectedBackground;
@@ -777,7 +794,7 @@
             }
         }
 
-        function applyCustomizations() {
+        function applyCustomizations(authorLoggedIn) {
             if (!giftData) return;
             
             // Load customization selections from gift data
@@ -785,7 +802,7 @@
 
             const letterFull = document.querySelector('.letter-full');
 
-            if (giftData && giftData.selectedBackground) {
+            if (giftData && giftData.selectedBackground && authorLoggedIn !== false) {
                 const selectedBackground = giftData.selectedBackground;
                 const backgroundMap = {
                     'bg1': 'Assets/bg1.png',
@@ -811,6 +828,9 @@
                     document.body.style.setProperty('background-position', 'center', 'important');
                     document.body.style.setProperty('background-attachment', 'fixed', 'important');
                 }
+            } else if (authorLoggedIn === false) {
+                // Restore default background if author not logged in
+                document.body.style.setProperty('background-image', "url('Assets/ign latte.png')", 'important');
             }
 
             // Apply font color
@@ -831,10 +851,19 @@
             });
 
             // Apply visual effect (balloon or sparkle)
-            applyVisualEffect();
+            applyVisualEffect(authorLoggedIn);
         }
 
-        function applyVisualEffect() {
+        function applyVisualEffect(authorLoggedIn) {
+            // NEW: Skip visual effects if creator was not logged in
+            // Use the authorLoggedIn status passed from populateLetterContent
+            if (authorLoggedIn === false) {
+                console.log("Visual effects skipped because author was not logged in.");
+                const sparklesContainer = document.getElementById('sparkles');
+                if (sparklesContainer) sparklesContainer.innerHTML = '';
+                return;
+            }
+
             const selectedEffect = giftData ? giftData.effect : null;
             const sparklesContainer = document.getElementById('sparkles');
 
@@ -979,7 +1008,8 @@
                     message: giftData.message,
                     imageData: giftData.imageData,
                     createdAt: giftData.createdAt,
-                    momentType: giftData.momentType
+                    momentType: giftData.momentType,
+                    authorLoggedIn: giftData.authorLoggedIn
                 };
             } else {
                 // Collaborator's letter
@@ -992,7 +1022,8 @@
                         message: collab.message,
                         imageData: collab.imageData,
                         createdAt: collab.createdAt,
-                        momentType: giftData.momentType
+                        momentType: giftData.momentType,
+                        authorLoggedIn: collab.authorLoggedIn
                     };
                 } else {
                     return;
@@ -1065,7 +1096,8 @@
             }
 
             // Apply customizations (background and font color)
-            applyCustomizations();
+            // Use the originator's login status to ensure effects are consistent across all letters
+            applyCustomizations(giftData.authorLoggedIn);
         }
 
         function showPhoto(letterIndex = 0) {
