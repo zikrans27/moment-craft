@@ -1014,6 +1014,19 @@
                 }
             }
 
+            // Set greeting based on moment type
+            const recipient = letterData.recipientName || 'Sahabatku';
+            let greeting = '';
+
+            if (letterData.momentType === 'Birthday') {
+                greeting = Hai, ${recipient}!;
+            } else if (letterData.momentType === 'Graduation') {
+                greeting = Hai, ${recipient}!;
+            } else {
+                // Default / Love Letter
+                greeting = Hai ${recipient} Tersayang,;
+            }
+            
             // Set recipient name
             document.getElementById('recipientName').textContent =
                 `Untuk ${letterData.recipientName || 'Orang Spesial'}`;
@@ -1198,3 +1211,4 @@ function createSparkles(isLarge = false) {
 </body>
 
 </html>
+
