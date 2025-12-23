@@ -559,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 selectedEffectId = giftData.effect || 'none';
                 selectedBackgroundId = giftData.selectedBackground || 'bg1';
-                selectedFontColorId = giftData.selectedFontColor || 'white';
+                selectedFontColorId = giftData.selectedFontColor || 'black';
 
                 localStorage.setItem('selectedEffect', selectedEffectId);
                 localStorage.setItem('selectedBackground', selectedBackgroundId);
@@ -766,7 +766,7 @@ window.applyEffect = () => {
     // Get selected names for display
     const effectName = allEffects.find(e => e.id === selectedEffectId)?.name || 'None';
     const backgroundName = allBackgrounds.find(b => b.id === selectedBackgroundId)?.name || 'Default';
-    const fontColorName = fontColors.find(c => c.id === selectedFontColorId)?.name || 'White';
+    const fontColorName = fontColors.find(c => c.id === selectedFontColorId)?.name || 'Hitam';
 
     // Save selections to localStorage
     localStorage.setItem('selectedEffect', selectedEffectId);
@@ -858,7 +858,7 @@ function handleGiftSubmission(event) {
             momentType,
             effect: localStorage.getItem('selectedEffect') || 'none',
             selectedBackground: localStorage.getItem('selectedBackground') || 'bg1',
-            selectedFontColor: localStorage.getItem('selectedFontColor') || 'white',
+            selectedFontColor: localStorage.getItem('selectedFontColor') || 'black',
             selectedMusic: JSON.parse(localStorage.getItem('selectedMusic') || 'null'),
             imageData,
             createdAt: new Date().toISOString(),
