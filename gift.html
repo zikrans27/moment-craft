@@ -782,7 +782,7 @@
             if (!giftData) return;
             
             // Load customization selections from gift data
-            const selectedFontColor = giftData.selectedFontColor || 'white';
+            const selectedFontColor = giftData.selectedFontColor || 'black';
 
             const letterFull = document.querySelector('.letter-full');
 
@@ -827,7 +827,7 @@
                 'purple': '#800080'
             };
 
-            const fontColor = fontColorMap[selectedFontColor] || '#ffffff';
+            const fontColor = fontColorMap[selectedFontColor] || '#000000';
 
             // Apply to all text elements in letter
             document.querySelectorAll('.recipient-name, .moment-badge, .gift-date, .greeting, .message, .signature').forEach(el => {
